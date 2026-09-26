@@ -1,0 +1,22 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Local file storage
+src/FieldOps.Api/data/
+data/
+
+# Angular
+web/node_modules/
+web/dist/
+web/.angular/
+web/coverage/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
