@@ -1,3 +1,4 @@
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
 using FieldOps.Domain.Common;
@@ -9,7 +10,7 @@ namespace FieldOps.Application.Features.Technicians;
 
 public sealed record RequestTimeOffCommand(TimeOffInput Input);
 
-public sealed class RequestTimeOffHandler(IAppDbContext db, ICurrentUser user, TimeOffReader reader)
+public sealed class RequestTimeOffHandler(IAppDbContext db, ICurrentUser user, TimeOffReader reader, Notifier notifier)
     : ICommandHandler<RequestTimeOffCommand, Result<TimeOffDto>>
 {
     public async Task<Result<TimeOffDto>> Handle(RequestTimeOffCommand cmd, CancellationToken ct)
@@ -34,6 +35,7 @@ public sealed class RequestTimeOffHandler(IAppDbContext db, ICurrentUser user, T
         if (timeOff.IsFailure) return timeOff.Error;
 
         db.TimeOffs.Add(timeOff.Value);
+        await notifier.TimeOffRequestedAsync(technicianId, timeOff.Value.StartsAt, timeOff.Value.EndsAt, ct);
         await db.SaveChangesAsync(ct);
         return (await reader.ReadAsync(db.TimeOffs.Where(t => t.Id == timeOff.Value.Id), ct))[0];
     }

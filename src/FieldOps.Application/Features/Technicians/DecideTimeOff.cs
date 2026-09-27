@@ -1,3 +1,4 @@
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Features.WorkOrders;
 using FieldOps.Domain.Common;
@@ -8,7 +9,7 @@ namespace FieldOps.Application.Features.Technicians;
 
 public sealed record DecideTimeOffCommand(Guid Id, bool Approve);
 
-public sealed class DecideTimeOffHandler(IAppDbContext db, TimeOffReader reader)
+public sealed class DecideTimeOffHandler(IAppDbContext db, TimeOffReader reader, Notifier notifier)
     : ICommandHandler<DecideTimeOffCommand, Result<TimeOffDecision>>
 {
     public async Task<Result<TimeOffDecision>> Handle(DecideTimeOffCommand cmd, CancellationToken ct)
@@ -19,6 +20,7 @@ public sealed class DecideTimeOffHandler(IAppDbContext db, TimeOffReader reader)
         var result = cmd.Approve ? timeOff.Approve() : timeOff.Reject();
         if (result.IsFailure) return result.Error;
 
+        await notifier.TimeOffDecidedAsync(timeOff.TechnicianId, cmd.Approve, timeOff.StartsAt, timeOff.EndsAt, ct);
         await db.SaveChangesAsync(ct);
 
         // Approved time off does not move existing jobs; it lists them so Office can reschedule (US-TEC-03 AC3).

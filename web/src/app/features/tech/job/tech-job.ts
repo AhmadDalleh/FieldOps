@@ -25,6 +25,7 @@ import { WorkOrder, WorkOrderStatus, WorkOrdersApi } from '../../work-orders/wor
 import { FieldApi, Location, TimeEntry } from '../field.api';
 import { clockTime } from '../my-jobs/my-jobs';
 import { CompleteDialog } from './complete-dialog';
+import { onWorkOrderChange } from '../../../core/realtime';
 
 const PHOTO_STATUSES: WorkOrderStatus[] = ['EnRoute', 'InProgress', 'OnHold'];
 
@@ -269,6 +270,9 @@ export class TechJob {
   protected readonly attachments = rxResource({ params: () => this.id(), stream: ({ params }) => this.fieldApi.attachments(params) });
   protected readonly timeEntries = rxResource({ params: () => this.id(), stream: ({ params }) => this.fieldApi.timeEntries(params) });
   protected readonly notes = rxResource({ params: () => this.id(), stream: ({ params }) => this.workOrders.notes(params) });
+  constructor() {
+    onWorkOrderChange(() => this.loaded.reload(), (change) => change.id === this.id());
+  }
 
   protected readonly busy = signal(false);
   protected readonly locating = signal(false);

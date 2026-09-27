@@ -3,6 +3,7 @@ using FieldOps.Domain.Customers;
 using FieldOps.Domain.Identity;
 using FieldOps.Domain.Inventory;
 using FieldOps.Domain.Invoicing;
+using FieldOps.Domain.Notifications;
 using FieldOps.Domain.Settings;
 using FieldOps.Domain.Technicians;
 using FieldOps.Domain.WorkOrders;
@@ -37,6 +38,7 @@ public interface IAppDbContext
     DbSet<WorkOrderPart> WorkOrderParts { get; }
     DbSet<Invoice> Invoices { get; }
     DbSet<InvoiceLine> InvoiceLines { get; }
+    DbSet<Notification> Notifications { get; }
 
     DatabaseFacade Database { get; }
 

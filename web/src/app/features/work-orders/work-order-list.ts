@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router } from '@angular/router';
 import { statusLabel } from './work-order-labels';
 import { WorkOrderDialog, WorkOrderDialogData } from './work-order-dialog';
+import { onWorkOrderChange } from '../../core/realtime';
 import { WorkOrderTable } from './work-order-table';
 import {
   OPEN_STATUSES, PRIORITIES, STATUSES, TYPES, WorkOrder, WorkOrderListItem, WorkOrderPriority, WorkOrderQuery,
@@ -90,6 +91,9 @@ export class WorkOrderList {
     type: null as WorkOrderType | null,
   });
   protected readonly workOrders = rxResource({ params: () => this.query(), stream: ({ params }) => this.api.list(params) });
+  constructor() {
+    onWorkOrderChange(() => this.workOrders.reload());
+  }
 
   protected set(change: Partial<{ search: string; statuses: WorkOrderStatus[]; priority: WorkOrderPriority | null; type: WorkOrderType | null }>): void {
     this.query.update((q) => ({ ...q, ...change, page: 1 }));

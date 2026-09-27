@@ -16,6 +16,9 @@ public interface IIdentityService
 
     Task<IReadOnlyDictionary<Guid, UserInfo>> FindByIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct);
 
+    /// <summary>Ids of the active users holding any of the roles, for notifications to the office or admins.</summary>
+    Task<IReadOnlyList<Guid>> ActiveUserIdsInRolesAsync(IReadOnlyCollection<Role> roles, CancellationToken ct);
+
     Task<PagedResult<UserInfo>> ListAsync(PageRequest page, CancellationToken ct);
 
     Task<Result<Guid>> CreateAsync(string fullName, string email, string? phoneNumber, Role role, string password, CancellationToken ct);

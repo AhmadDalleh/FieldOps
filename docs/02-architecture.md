@@ -170,6 +170,8 @@ sequenceDiagram
   - `WorkOrderChanged {id, status}` goes to the `office` group and to the assigned technician. The dispatch board and lists refresh the affected item.
   - `NotificationCreated {notification}` goes to the target user and updates the bell icon.
 - `INotifier` in Application hides SignalR from handlers.
+- As built (Phase 9): handlers call the Application `Notifier`, which stores `Notification` rows and queues pushes and technician emails. `WorkOrderChanged` is raised by a `SaveChanges` interceptor for every saved work order, so no handler can forget it. Pushes and emails go out only after the save succeeds, and a failing push or email is logged, never surfaced to the user. Inside an explicit transaction a push can precede the commit; the client simply reloads.
+- The Angular side is `core/realtime.ts` (connection, reconnects, `onWorkOrderChange()`) plus `features/notifications/` (store and bell), rather than a single `notifications.service.ts`.
 
 ## Files (photos, signatures, invoice PDFs)
 - `IFileStorage` has `SaveAsync(stream, key)`, `OpenReadAsync(key)`, and `DeleteAsync(key)`. The MVP stores files on local disk under `/data/files/{yyyy}/{MM}/{guid}`.

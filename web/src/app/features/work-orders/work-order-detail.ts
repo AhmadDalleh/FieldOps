@@ -25,6 +25,7 @@ import { ScheduleDialog } from './schedule-dialog';
 import { PriorityChip, StatusChip, move, statusLabel } from './work-order-labels';
 import { WorkOrderDialog, WorkOrderDialogData } from './work-order-dialog';
 import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api';
+import { onWorkOrderChange } from '../../core/realtime';
 
 @Component({
   selector: 'app-work-order-detail',
@@ -303,6 +304,12 @@ export class WorkOrderDetail {
   protected readonly workOrder = linkedSignal<WorkOrder | null>(() => this.loaded.value() ?? null);
   protected readonly notes = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.notes(params) });
   protected readonly history = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.history(params) });
+  constructor() {
+    onWorkOrderChange(() => {
+      this.loaded.reload();
+      this.history.reload();
+    }, (change) => change.id === this.id());
+  }
 
   protected readonly locked = computed(() => {
     const status = this.workOrder()?.status;

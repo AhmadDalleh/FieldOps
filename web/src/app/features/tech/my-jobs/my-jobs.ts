@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { formatDubai } from '../../../shared/time/dubai-time';
 import { PriorityChip, StatusChip } from '../../work-orders/work-order-labels';
 import { FieldApi, JobDay } from '../field.api';
+import { onWorkOrderChange } from '../../../core/realtime';
 
 /** The Dubai clock time of an instant, e.g. `14:30`. */
 export function clockTime(iso: string | null): string {
@@ -73,5 +74,8 @@ export class MyJobs {
   private readonly api = inject(FieldApi);
   protected readonly day = signal<JobDay>('Today');
   protected readonly jobs = rxResource({ params: () => this.day(), stream: ({ params }) => this.api.myJobs(params) });
+  constructor() {
+    onWorkOrderChange(() => this.jobs.reload());
+  }
   protected readonly time = clockTime;
 }

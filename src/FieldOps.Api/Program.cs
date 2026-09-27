@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using FieldOps.Api.Common;
 using FieldOps.Api.Endpoints;
+using FieldOps.Api.Hubs;
 using FieldOps.Application;
+using FieldOps.Application.Abstractions;
 using FieldOps.Infrastructure;
 using FieldOps.Infrastructure.Identity;
 using FieldOps.Infrastructure.Persistence;
@@ -22,9 +24,22 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
     {
         bearer.MapInboundClaims = false;
         bearer.TokenValidationParameters = FieldOps.Infrastructure.DependencyInjection.TokenValidationParameters(jwt.Value);
+        // Browsers cannot set headers on WebSockets, so the hub takes the token from the query string.
+        bearer.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments(NotificationsHub.Path))
+                    context.Token = token;
+                return Task.CompletedTask;
+            },
+        };
     });
 builder.Services.AddAuthorizationBuilder().AddFieldOpsPolicies();
 
+builder.Services.AddSignalR().AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddSingleton<INotifier, SignalRNotifier>();
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
@@ -67,6 +82,8 @@ app.MapDispatchEndpoints();
 app.MapMeEndpoints();
 app.MapInventoryEndpoints();
 app.MapInvoiceEndpoints();
+app.MapNotificationEndpoints();
+app.MapHub<NotificationsHub>(NotificationsHub.Path);
 
 app.Run();
 

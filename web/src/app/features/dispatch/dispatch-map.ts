@@ -9,6 +9,7 @@ import { dubaiToday, formatDubai } from '../../shared/time/dubai-time';
 import { statusLabel } from '../work-orders/work-order-labels';
 import { STATUS_COLORS, addDays } from './board-layout';
 import { BoardJob, DispatchApi } from './dispatch.api';
+import { onWorkOrderChange } from '../../core/realtime';
 
 const DUBAI: L.LatLngTuple = [25.2048, 55.2708];
 
@@ -75,6 +76,7 @@ export class DispatchMap implements OnDestroy {
   private readonly ready = signal(false);
 
   constructor() {
+    onWorkOrderChange(() => this.board.reload());
     afterNextRender(() => {
       this.map = L.map(this.container().nativeElement).setView(DUBAI, 11);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
