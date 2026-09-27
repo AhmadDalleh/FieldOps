@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, afterNextRender, effect, model, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, afterNextRender, effect, input, model, viewChild } from '@angular/core';
 import * as L from 'leaflet';
 
 export interface LatLng {
@@ -23,6 +23,8 @@ export function roundCoordinate(value: number): number {
 export class MapPicker implements OnDestroy {
   /** The pin location. Clicking the map sets it; setting it moves the pin. */
   readonly value = model<LatLng | null>(null);
+  /** Shows the pin without letting clicks move it. */
+  readonly readonly = input(false);
 
   private readonly container = viewChild.required<ElementRef<HTMLElement>>('map');
   private map?: L.Map;
@@ -36,9 +38,9 @@ export class MapPicker implements OnDestroy {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(this.map);
-      this.map.on('click', (e: L.LeafletMouseEvent) =>
-        this.value.set({ lat: roundCoordinate(e.latlng.lat), lng: roundCoordinate(e.latlng.lng) }),
-      );
+      this.map.on('click', (e: L.LeafletMouseEvent) => {
+        if (!this.readonly()) this.value.set({ lat: roundCoordinate(e.latlng.lat), lng: roundCoordinate(e.latlng.lng) });
+      });
       this.showPin(this.value());
     });
 

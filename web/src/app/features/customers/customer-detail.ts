@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
 import { problemMessage } from '../../core/problem';
 import { CustomerAssets } from '../assets/customer-assets';
+import { CustomerWorkOrders } from '../work-orders/customer-work-orders';
 import { ConfirmDialog, ConfirmData } from '../../shared/ui/confirm-dialog/confirm-dialog';
 import { ContactDialog, ContactDialogData } from './contact-dialog';
 import { CustomerDialog } from './customer-dialog';
@@ -19,7 +20,7 @@ import { SiteDialog, SiteDialogData } from './site-dialog';
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [MatTabsModule, MatButtonModule, MatTableModule, MatChipsModule, MatSlideToggleModule, RouterLink, CustomerAssets],
+  imports: [MatTabsModule, MatButtonModule, MatTableModule, MatChipsModule, MatSlideToggleModule, RouterLink, CustomerAssets, CustomerWorkOrders],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/office/customers" class="back">← Customers</a>
@@ -131,7 +132,11 @@ import { SiteDialog, SiteDialogData } from './site-dialog';
             <app-customer-assets [customerId]="c.id" [sites]="allSites.value() ?? []" />
           </ng-template>
         </mat-tab>
-        <mat-tab label="Work orders"><p class="empty">Work orders arrive in Phase 4.</p></mat-tab>
+        <mat-tab label="Work orders">
+          <ng-template matTabContent>
+            <app-customer-work-orders [customerId]="c.id" [customerName]="c.name" [customerActive]="c.isActive" />
+          </ng-template>
+        </mat-tab>
         <mat-tab label="Invoices"><p class="empty">Invoices arrive in Phase 8.</p></mat-tab>
       </mat-tab-group>
     }
