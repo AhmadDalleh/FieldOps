@@ -10,6 +10,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
 import { problemMessage } from '../../core/problem';
+import { CustomerAssets } from '../assets/customer-assets';
 import { ConfirmDialog, ConfirmData } from '../../shared/ui/confirm-dialog/confirm-dialog';
 import { ContactDialog, ContactDialogData } from './contact-dialog';
 import { CustomerDialog } from './customer-dialog';
@@ -18,7 +19,7 @@ import { SiteDialog, SiteDialogData } from './site-dialog';
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [MatTabsModule, MatButtonModule, MatTableModule, MatChipsModule, MatSlideToggleModule, RouterLink],
+  imports: [MatTabsModule, MatButtonModule, MatTableModule, MatChipsModule, MatSlideToggleModule, RouterLink, CustomerAssets],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/office/customers" class="back">← Customers</a>
@@ -125,7 +126,11 @@ import { SiteDialog, SiteDialogData } from './site-dialog';
           }
         </mat-tab>
 
-        <mat-tab label="Assets"><p class="empty">Assets arrive in Phase 2.</p></mat-tab>
+        <mat-tab label="Assets">
+          <ng-template matTabContent>
+            <app-customer-assets [customerId]="c.id" [sites]="allSites.value() ?? []" />
+          </ng-template>
+        </mat-tab>
         <mat-tab label="Work orders"><p class="empty">Work orders arrive in Phase 4.</p></mat-tab>
         <mat-tab label="Invoices"><p class="empty">Invoices arrive in Phase 8.</p></mat-tab>
       </mat-tab-group>
@@ -165,6 +170,9 @@ export class CustomerDetail {
     stream: ({ params }) => this.api.sites(params.id, params.includeInactive),
   });
 
+  /** Every site, active or not, so assets can be registered against the active ones. */
+  protected readonly allSites = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.sites(params, true) });
+
   protected edit(customer: Customer): void {
     this.dialog
       .open(CustomerDialog, { data: customer })
@@ -197,13 +205,18 @@ export class CustomerDetail {
     this.dialog
       .open(SiteDialog, { data, width: '640px', maxWidth: '95vw' })
       .afterClosed()
-      .subscribe((saved) => saved && this.sites.reload());
+      .subscribe((saved) => saved && this.reloadSites());
   }
 
   protected deactivateSite(site: Site): void {
     this.confirm({ title: 'Deactivate site?', message: `${site.name} will be hidden from lists.`, confirmLabel: 'Deactivate' })
       .pipe(switchMap(() => this.api.deactivateSite(site.id)))
-      .subscribe({ next: () => this.sites.reload(), error: (err: unknown) => this.fail(err) });
+      .subscribe({ next: () => this.reloadSites(), error: (err: unknown) => this.fail(err) });
+  }
+
+  private reloadSites(): void {
+    this.sites.reload();
+    this.allSites.reload();
   }
 
   private confirm(data: ConfirmData) {

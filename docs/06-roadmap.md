@@ -67,9 +67,9 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] US-SITE-02 Edit/deactivate site
 
 ## Phase 2 — Assets
-- [ ] US-AST-01 Register asset
-- [ ] US-AST-02 Asset history (the endpoint returns an empty list until P4)
-- [ ] US-AST-03 Warranty badge
+- [x] US-AST-01 Register asset
+- [x] US-AST-02 Asset history (the endpoint returns an empty list until P4)
+- [x] US-AST-03 Warranty badge
 
 ## Phase 3 — Technicians
 - [ ] US-TEC-01 Technician profile

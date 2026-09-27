@@ -1,4 +1,5 @@
 using FieldOps.Application.Abstractions;
+using FieldOps.Domain.Assets;
 using FieldOps.Domain.Common;
 using FieldOps.Domain.Customers;
 using FieldOps.Domain.Identity;
@@ -22,6 +23,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
     public DbSet<Site> Sites => Set<Site>();
+    public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)
