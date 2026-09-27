@@ -86,7 +86,7 @@ public abstract class TestBase(PostgresFixture fixture) : IAsyncLifetime
     protected async Task Advance(Guid workOrderId, Func<WorkOrder, Guid, DateTimeOffset, Domain.Common.Result> step)
     {
         var db = NewDb();
-        var workOrder = await db.WorkOrders.SingleAsync(w => w.Id == workOrderId);
+        var workOrder = await db.WorkOrders.Include(w => w.Tasks).Include(w => w.TimeEntries).SingleAsync(w => w.Id == workOrderId);
         var userId = fixture.CurrentUser.IsAuthenticated ? fixture.CurrentUser.UserId : (await GivenUser(Role.Admin)).Id;
         var result = step(workOrder, userId, fixture.Clock.GetUtcNow());
         if (result.IsFailure) throw new InvalidOperationException(result.Error.Message);
@@ -102,8 +102,25 @@ public abstract class TestBase(PostgresFixture fixture) : IAsyncLifetime
         await Assign(workOrderId, technicianId);
         await Advance(workOrderId, (w, u, now) => w.Dispatch(u, now));
         await Advance(workOrderId, (w, u, now) => w.Start(u, now));
-        await Advance(workOrderId, (w, u, now) => w.Complete(notes, "Sara M.", Guid.NewGuid(), u, now));
+        var signature = await GivenSignature(workOrderId);
+        await Advance(workOrderId, (w, u, now) => w.Complete(notes, "Sara M.", signature, u, now, "Not needed"));
     }
+
+    /// <summary>Stores a signature attachment on an in-progress work order and returns its id.</summary>
+    protected async Task<Guid> GivenSignature(Guid workOrderId)
+    {
+        var db = NewDb();
+        var workOrder = await db.WorkOrders.AsNoTracking().SingleAsync(w => w.Id == workOrderId);
+        var userId = fixture.CurrentUser.IsAuthenticated ? fixture.CurrentUser.UserId : (await GivenUser(Role.Admin)).Id;
+        var signature = Attachment.Create(workOrder, AttachmentKind.Signature, "signature.png", "image/png", 100, userId,
+            fixture.Clock.GetUtcNow()).Value;
+        db.Attachments.Add(signature);
+        await db.SaveChangesAsync();
+        return signature.Id;
+    }
+
+    protected void SignInTechnician((Guid UserId, Guid TechnicianId) technician) =>
+        fixture.CurrentUser.SignInAs(technician.UserId, Role.Technician, technician.TechnicianId);
 
     protected Task<Domain.Common.Result<AuthResponse>> Login(string email, string password = Password) =>
         Resolve<LoginHandler>().Handle(new LoginCommand(email, password), default);

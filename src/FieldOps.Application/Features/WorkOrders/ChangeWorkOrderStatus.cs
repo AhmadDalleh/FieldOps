@@ -2,6 +2,7 @@ using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
 using FieldOps.Domain.Common;
 using FieldOps.Domain.WorkOrders;
+using Microsoft.EntityFrameworkCore;
 
 namespace FieldOps.Application.Features.WorkOrders;
 
@@ -28,7 +29,7 @@ public sealed class ResumeWorkOrderHandler(IAppDbContext db, ICurrentUser user, 
     : ICommandHandler<ResumeWorkOrderCommand, Result<WorkOrderDto>>
 {
     public Task<Result<WorkOrderDto>> Handle(ResumeWorkOrderCommand cmd, CancellationToken ct) =>
-        StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Resume(user.UserId, clock.GetUtcNow()), ct);
+        StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Resume(user.UserId, clock.GetUtcNow(), user.TechnicianId), ct);
 }
 
 /// <summary>Office only (US-WO-08).</summary>
@@ -40,7 +41,6 @@ public sealed class CancelWorkOrderHandler(IAppDbContext db, ICurrentUser user, 
         if (!user.IsOffice()) return Task.FromResult<Result<WorkOrderDto>>(Errors.Forbidden);
 
         // TODO(P7): return 409 while consumed parts are still on the job (US-WO-08 AC1).
-        // TODO(P6): stop any open time entries.
         // TODO(P9): notify the assigned technician (US-WO-08 AC2).
         return StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Cancel(cmd.Input.Reason, user.UserId, clock.GetUtcNow()), ct);
     }
@@ -51,7 +51,8 @@ internal static class StatusChange
     public static async Task<Result<WorkOrderDto>> RunAsync(
         IAppDbContext db, ICurrentUser user, WorkOrderReader reader, Guid id, Func<WorkOrder, Result> change, CancellationToken ct)
     {
-        var found = await db.WorkOrders.FindAccessibleAsync(id, user, ct);
+        // Tasks for the completion rule, time entries so the change can stop and start them.
+        var found = await db.WorkOrders.Include(w => w.Tasks).Include(w => w.TimeEntries).FindAccessibleAsync(id, user, ct);
         if (found.IsFailure) return found.Error;
 
         var result = change(found.Value);

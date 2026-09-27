@@ -33,12 +33,41 @@ internal sealed class WorkOrderConfiguration : IEntityTypeConfiguration<WorkOrde
         builder.HasOne<Asset>().WithMany().HasForeignKey(w => w.AssetId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Skill>().WithMany().HasForeignKey(w => w.RequiredSkillId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Technician>().WithMany().HasForeignKey(w => w.AssignedTechnicianId).OnDelete(DeleteBehavior.Restrict);
-        // TODO(P6): foreign key from signature_attachment_id to attachments once that table exists.
+        builder.HasOne<Attachment>().WithMany().HasForeignKey(w => w.SignatureAttachmentId).OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(w => w.Tasks).WithOne().HasForeignKey(t => t.WorkOrderId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(w => w.Tasks).UsePropertyAccessMode(PropertyAccessMode.Field);
         builder.HasMany(w => w.History).WithOne().HasForeignKey(h => h.WorkOrderId).OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(w => w.History).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.HasMany(w => w.TimeEntries).WithOne().HasForeignKey(e => e.WorkOrderId).OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(w => w.TimeEntries).UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+internal sealed class TimeEntryConfiguration : IEntityTypeConfiguration<TimeEntry>
+{
+    public void Configure(EntityTypeBuilder<TimeEntry> builder)
+    {
+        builder.ToTable("time_entries");
+        builder.Ignore(e => e.IsOpen);
+        builder.HasIndex(e => new { e.TechnicianId, e.StartedAt });
+        builder.HasIndex(e => e.WorkOrderId);
+        builder.HasOne<Technician>().WithMany().HasForeignKey(e => e.TechnicianId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+internal sealed class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
+{
+    public void Configure(EntityTypeBuilder<Attachment> builder)
+    {
+        builder.ToTable("attachments");
+        builder.Property(a => a.FileName).HasMaxLength(255).IsRequired();
+        builder.Property(a => a.ContentType).HasMaxLength(100).IsRequired();
+        builder.Property(a => a.StorageKey).HasMaxLength(500).IsRequired();
+        builder.HasIndex(a => new { a.WorkOrderId, a.UploadedAt });
+        // Restrict, not cascade: a work order's signature points back here, and work orders are never hard-deleted.
+        builder.HasOne<WorkOrder>().WithMany().HasForeignKey(a => a.WorkOrderId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<AppUser>().WithMany().HasForeignKey(a => a.UploadedBy).OnDelete(DeleteBehavior.Restrict);
     }
 }
 

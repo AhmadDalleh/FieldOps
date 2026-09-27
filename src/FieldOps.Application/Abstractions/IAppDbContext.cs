@@ -28,6 +28,8 @@ public interface IAppDbContext
     DbSet<WorkOrderNote> WorkOrderNotes { get; }
     DbSet<WorkOrderStatusHistory> WorkOrderStatusHistory { get; }
     DbSet<ChecklistTemplate> ChecklistTemplates { get; }
+    DbSet<TimeEntry> TimeEntries { get; }
+    DbSet<Attachment> Attachments { get; }
 
     DatabaseFacade Database { get; }
 

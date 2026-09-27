@@ -31,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<TimeOffReader>();
         services.AddScoped<WorkOrderReader>();
         services.AddScoped<NoteReader>();
+        services.AddScoped<AttachmentReader>();
+        services.AddScoped<TimeEntryReader>();
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
         return services;
     }

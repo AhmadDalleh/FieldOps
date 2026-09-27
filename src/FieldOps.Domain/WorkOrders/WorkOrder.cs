@@ -39,6 +39,7 @@ public sealed class WorkOrder : AuditableEntity
 
     private readonly List<WorkOrderTask> _tasks = [];
     private readonly List<WorkOrderStatusHistory> _history = [];
+    private readonly List<TimeEntry> _timeEntries = [];
 
     private WorkOrder() { }
 
@@ -68,6 +69,9 @@ public sealed class WorkOrder : AuditableEntity
 
     public IReadOnlyList<WorkOrderTask> Tasks => _tasks;
     public IReadOnlyList<WorkOrderStatusHistory> History => _history;
+
+    /// <remarks>Load with the work order before a status change so open entries can be stopped.</remarks>
+    public IReadOnlyList<TimeEntry> TimeEntries => _timeEntries;
 
     /// <summary>Open work orders still need work: anything not Completed, Invoiced or Cancelled.</summary>
     public bool IsOpen => Status is not (WorkOrderStatus.Completed or WorkOrderStatus.Invoiced or WorkOrderStatus.Cancelled);
@@ -132,15 +136,23 @@ public sealed class WorkOrder : AuditableEntity
 
     public Result Dispatch(Guid userId, DateTimeOffset now) => Transition(WorkOrderAction.Dispatch, userId, now);
 
-    // TODO(P6): start a Travel time entry.
-    public Result EnRoute(Guid userId, DateTimeOffset now, double? latitude = null, double? longitude = null) =>
-        Transition(WorkOrderAction.EnRoute, userId, now, null, latitude, longitude);
+    /// <summary>The technician sets off: starts a Travel entry (US-TAPP-03).</summary>
+    public Result EnRoute(Guid userId, DateTimeOffset now, double? latitude = null, double? longitude = null)
+    {
+        var result = Transition(WorkOrderAction.EnRoute, userId, now, null, latitude, longitude);
+        if (result.IsSuccess) StartEntry(TimeEntryType.Travel, now);
+        return result;
+    }
 
-    // TODO(P6): stop the Travel time entry and start a Work one.
+    /// <summary>The technician arrives: stops travel and starts a Work entry (US-TAPP-04).</summary>
     public Result Start(Guid userId, DateTimeOffset now, double? latitude = null, double? longitude = null)
     {
         var result = Transition(WorkOrderAction.Start, userId, now, null, latitude, longitude);
-        if (result.IsSuccess) StartedAt ??= now;
+        if (result.IsFailure) return result;
+
+        StartedAt ??= now;
+        StopEntries(now);
+        StartEntry(TimeEntryType.Work, now);
         return result;
     }
 
@@ -148,22 +160,40 @@ public sealed class WorkOrder : AuditableEntity
     {
         if (!IsAllowed(Status, WorkOrderAction.Hold)) return WorkOrderErrors.InvalidTransition(Status, WorkOrderAction.Hold);
         if (string.IsNullOrWhiteSpace(note)) return WorkOrderErrors.NoteRequired;
+
+        StopEntries(now);
         return Transition(WorkOrderAction.Hold, userId, now, note.Trim());
     }
 
-    public Result Resume(Guid userId, DateTimeOffset now) => Transition(WorkOrderAction.Resume, userId, now);
+    /// <param name="byTechnicianId">The technician resuming, if any: work time restarts only when the assigned technician resumes.</param>
+    public Result Resume(Guid userId, DateTimeOffset now, Guid? byTechnicianId = null)
+    {
+        var result = Transition(WorkOrderAction.Resume, userId, now);
+        if (result.IsSuccess && byTechnicianId is not null && byTechnicianId == AssignedTechnicianId)
+            StartEntry(TimeEntryType.Work, now);
+        return result;
+    }
 
-    public Result Complete(string? completionNotes, string? signedByName, Guid? signatureAttachmentId, Guid userId, DateTimeOffset now)
+    /// <summary>
+    /// US-TAPP-08: needs notes, the signer and a signature, and every task done unless the technician says why some were skipped.
+    /// The handler checks that the signature is a Signature attachment of this job.
+    /// </summary>
+    public Result Complete(
+        string? completionNotes, string? signedByName, Guid? signatureAttachmentId, Guid userId, DateTimeOffset now,
+        string? skippedTasksReason = null)
     {
         if (!IsAllowed(Status, WorkOrderAction.Complete)) return WorkOrderErrors.InvalidTransition(Status, WorkOrderAction.Complete);
         if (string.IsNullOrWhiteSpace(completionNotes) || string.IsNullOrWhiteSpace(signedByName) || signatureAttachmentId is null)
             return WorkOrderErrors.CompletionDetailsRequired;
+        var skipped = _tasks.Any(t => !t.IsDone);
+        if (skipped && string.IsNullOrWhiteSpace(skippedTasksReason)) return WorkOrderErrors.TasksNotDone;
 
         CompletionNotes = completionNotes.Trim();
         SignedByName = signedByName.Trim();
         SignatureAttachmentId = signatureAttachmentId;
         CompletedAt = now;
-        return Transition(WorkOrderAction.Complete, userId, now);
+        StopEntries(now);
+        return Transition(WorkOrderAction.Complete, userId, now, skipped ? $"Skipped tasks: {skippedTasksReason!.Trim()}" : null);
     }
 
     /// <remarks>The handler must first check that no consumed parts remain on the job (US-WO-08 AC1).</remarks>
@@ -173,6 +203,7 @@ public sealed class WorkOrder : AuditableEntity
         if (string.IsNullOrWhiteSpace(reason)) return WorkOrderErrors.ReasonRequired;
 
         CancelReason = reason.Trim();
+        StopEntries(now);
         return Transition(WorkOrderAction.Cancel, userId, now, CancelReason);
     }
 
@@ -188,6 +219,34 @@ public sealed class WorkOrder : AuditableEntity
         _history.Add(new WorkOrderStatusHistory(Id, Status, next, userId, now, note, latitude, longitude));
         Status = next;
         return Result.Success();
+    }
+
+    // ---- Time entries ----
+
+    /// <summary>
+    /// US-TAPP-09: corrects an entry's times before the job is completed. The end must be after the start and not in the future;
+    /// an entry that is still running may keep no end. The handler checks overlaps with the technician's other entries.
+    /// </summary>
+    public Result<TimeEntry> CorrectTimeEntry(Guid entryId, DateTimeOffset start, DateTimeOffset? end, DateTimeOffset now)
+    {
+        if (!IsOpen) return WorkOrderErrors.TimeEntriesLocked;
+        var entry = _timeEntries.FirstOrDefault(e => e.Id == entryId);
+        if (entry is null) return WorkOrderErrors.TimeEntryNotFound;
+        if (end is null && !entry.IsOpen) return WorkOrderErrors.InvalidTimeEntry;
+        if (start > now || end > now || (end is { } e && e <= start)) return WorkOrderErrors.InvalidTimeEntry;
+
+        entry.Set(start, end);
+        return entry;
+    }
+
+    private void StartEntry(TimeEntryType type, DateTimeOffset now)
+    {
+        if (AssignedTechnicianId is { } technicianId) _timeEntries.Add(new TimeEntry(Id, technicianId, type, now));
+    }
+
+    private void StopEntries(DateTimeOffset now)
+    {
+        foreach (var entry in _timeEntries.Where(e => e.IsOpen)) entry.Stop(now);
     }
 
     // ---- Tasks ----

@@ -3,6 +3,7 @@ using FieldOps.Application.Common;
 using FieldOps.Application.Features.WorkOrders;
 using FieldOps.Domain.Common;
 using FieldOps.Domain.WorkOrders;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FieldOps.Api.Endpoints;
 
@@ -67,6 +68,19 @@ public static class WorkOrderEndpoints
         group.MapPost("/{id:guid}/resume", async (Guid id, ResumeWorkOrderHandler handler, CancellationToken ct) =>
             (await handler.Handle(new ResumeWorkOrderCommand(id), ct)).ToHttp());
 
+        // Field work by the assigned technician (US-TAPP-03/04/08)
+        group.MapPost("/{id:guid}/en-route", async (Guid id, LocationInput input, EnRouteHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new EnRouteCommand(id, input), ct)).ToHttp())
+            .Validate<LocationInput>();
+
+        group.MapPost("/{id:guid}/start", async (Guid id, LocationInput input, StartWorkOrderHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new StartWorkOrderCommand(id, input), ct)).ToHttp())
+            .Validate<LocationInput>();
+
+        group.MapPost("/{id:guid}/complete", async (Guid id, CompleteInput input, CompleteWorkOrderHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new CompleteWorkOrderCommand(id, input), ct)).ToHttp())
+            .Validate<CompleteInput>();
+
         group.MapPost("/{id:guid}/cancel", async (Guid id, CancelInput input, CancelWorkOrderHandler handler, CancellationToken ct) =>
                 (await handler.Handle(new CancelWorkOrderCommand(id, input), ct)).ToHttp())
             .RequireAuthorization(Policies.OfficeStaff);
@@ -105,6 +119,42 @@ public static class WorkOrderEndpoints
         group.MapPut("/{id:guid}/notes/{noteId:guid}", async (Guid id, Guid noteId, NoteInput input, EditNoteHandler handler, CancellationToken ct) =>
                 (await handler.Handle(new EditNoteCommand(id, noteId, input), ct)).ToHttp())
             .Validate<NoteInput>();
+
+        // Photos, signatures and documents (US-TAPP-06)
+        group.MapGet("/{id:guid}/attachments", async (Guid id, ListAttachmentsHandler handler, CancellationToken ct) =>
+            (await handler.Handle(new ListAttachmentsQuery(id), ct)).ToHttp());
+
+        group.MapPost("/{id:guid}/attachments", async (Guid id, IFormFile file, [FromForm] AttachmentKind kind,
+                UploadAttachmentHandler handler, CancellationToken ct) =>
+            {
+                await using var stream = file.OpenReadStream();
+                return (await handler.Handle(
+                        new UploadAttachmentCommand(id, kind, file.FileName, file.ContentType, file.Length, stream), ct))
+                    .ToHttp(a => Results.Created($"/api/attachments/{a.Id}", a));
+            })
+            .DisableAntiforgery();
+
+        // Time log (US-TAPP-09)
+        group.MapGet("/{id:guid}/time-entries", async (Guid id, ListTimeEntriesHandler handler, CancellationToken ct) =>
+            (await handler.Handle(new ListTimeEntriesQuery(id), ct)).ToHttp());
+
+        var attachments = app.MapGroup("/api/attachments").WithTags("Work orders").RequireAuthorization();
+
+        attachments.MapGet("/{id:guid}", async (Guid id, GetAttachmentFileHandler handler, CancellationToken ct) =>
+        {
+            var result = await handler.Handle(new GetAttachmentFileQuery(id), ct);
+            return result.IsSuccess
+                ? Results.Stream(result.Value.Content, result.Value.ContentType, result.Value.FileName)
+                : result.Error.ToProblem();
+        });
+
+        attachments.MapDelete("/{id:guid}", async (Guid id, DeleteAttachmentHandler handler, CancellationToken ct) =>
+            (await handler.Handle(new DeleteAttachmentCommand(id), ct)).ToHttp());
+
+        app.MapGroup("/api/time-entries").WithTags("Work orders").RequireAuthorization()
+            .MapPut("/{id:guid}", async (Guid id, TimeEntryInput input, CorrectTimeEntryHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new CorrectTimeEntryCommand(id, input), ct)).ToHttp())
+            .Validate<TimeEntryInput>();
 
         return app;
     }
