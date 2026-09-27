@@ -120,15 +120,15 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] Concurrency test: two technicians consuming the last units at the same time, so that one succeeds and one gets 409
 
 ## Phase 8 — Invoicing
-- [ ] `InvoiceCalculator` domain tests (rounding, the 0.25h labor rounding, VAT)
-- [ ] US-BIL-01 Generate draft
-- [ ] US-BIL-02 Edit draft lines
-- [ ] US-BIL-03 Issue
-- [ ] US-BIL-04 PDF (QuestPDF)
-- [ ] US-BIL-05 Mark paid
-- [ ] US-BIL-06 Void
-- [ ] US-BIL-07 Invoice list
-- [ ] Extend the E2E test: complete a job, then generate and issue the invoice, then download the PDF
+- [x] `InvoiceCalculator` domain tests (rounding, the 0.25h labor rounding, VAT)
+- [x] US-BIL-01 Generate draft
+- [x] US-BIL-02 Edit draft lines
+- [x] US-BIL-03 Issue
+- [x] US-BIL-04 PDF (QuestPDF)
+- [x] US-BIL-05 Mark paid
+- [x] US-BIL-06 Void
+- [x] US-BIL-07 Invoice list
+- [x] Extend the E2E test: complete a job, then generate and issue the invoice, then download the PDF
 
 ## Phase 9 — Notifications
 - [ ] SignalR hub, `INotifier`, and the Angular `notifications.service`

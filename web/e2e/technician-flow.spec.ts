@@ -2,6 +2,7 @@ import { Browser, Page, expect, test } from '@playwright/test';
 
 // Seeded by DevSeeder in Development (CLAUDE.md).
 const PASSWORD = 'Pass123!';
+const ADMIN = 'admin@fieldops.local';
 const DISPATCHER = 'dispatcher@fieldops.local';
 const TECHNICIAN = 'tech2@fieldops.local';
 
@@ -21,7 +22,7 @@ async function desktopPage(browser: Browser): Promise<Page> {
 // The technician's phone shares its location when they tap On my way.
 test.use({ geolocation: { latitude: 25.2048, longitude: 55.2708 }, permissions: ['geolocation'] });
 
-test('dispatcher schedules a job and the technician travels, starts and completes it', async ({ page, browser }) => {
+test('dispatcher schedules a job, the technician completes it, and the office invoices it', async ({ page, browser }) => {
   const title = `E2E boiler check ${Date.now() % 1_000_000}`;
 
   // Office: create, schedule and dispatch.
@@ -94,4 +95,30 @@ test('dispatcher schedules a job and the technician travels, starts and complete
   await office.goto(jobUrl);
   await expect(office.locator('app-status-chip').first()).toHaveText('Completed');
   await expect(office.getByText('Serviced and tested the boiler.')).toBeVisible();
+
+  // Office drafts the invoice and adds a call-out fee.
+  await office.getByRole('button', { name: 'Create invoice' }).click();
+  await office.waitForURL(/\/office\/invoices\/[0-9a-f-]+$/);
+  const invoiceUrl = office.url();
+  await expect(office.getByRole('heading', { name: 'Draft invoice' })).toBeVisible();
+  await office.getByRole('button', { name: 'Add line' }).click();
+  const line = office.getByRole('dialog');
+  await line.getByLabel('Description').fill('Call-out fee');
+  await line.getByLabel(/Unit price/).fill('150');
+  await line.getByRole('button', { name: 'Save' }).click();
+  await expect(office.getByRole('cell', { name: 'Call-out fee Other' })).toBeVisible();
+
+  // An admin issues it and downloads the PDF.
+  const admin = await desktopPage(browser);
+  await logIn(admin, ADMIN);
+  await admin.goto(invoiceUrl);
+  await admin.getByRole('button', { name: 'Issue' }).click();
+  await admin.getByRole('dialog').getByRole('button', { name: 'Issue' }).click();
+  await expect(admin.getByRole('heading', { name: /^INV-\d{6}$/ })).toBeVisible();
+  const download = admin.waitForEvent('download');
+  await admin.getByRole('button', { name: 'PDF' }).click();
+  expect((await download).suggestedFilename()).toMatch(/^INV-\d{6}\.pdf$/);
+
+  await office.goto(jobUrl);
+  await expect(office.locator('app-status-chip').first()).toHaveText('Invoiced');
 });

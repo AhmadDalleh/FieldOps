@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Observable, filter } from 'rxjs';
 import { problemMessage } from '../../core/problem';
 import { DubaiTimePipe } from '../../shared/time/dubai-time.pipe';
@@ -19,6 +19,7 @@ import { MapPicker } from '../../shared/ui/map-picker/map-picker';
 import { WarrantyBadge } from '../../shared/ui/warranty-badge/warranty-badge';
 import { AssetHistoryDialog } from '../assets/asset-history-dialog';
 import { WorkOrderPartsPanel } from '../inventory/work-order-parts';
+import { InvoicesApi } from '../invoices/invoices.api';
 import { ReasonDialog, ReasonDialogData } from './reason-dialog';
 import { ScheduleDialog } from './schedule-dialog';
 import { PriorityChip, StatusChip, move, statusLabel } from './work-order-labels';
@@ -69,6 +70,11 @@ import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api
           }
           @if (can('Cancel')) {
             <button mat-button class="danger" (click)="cancel(w)">Cancel job</button>
+          }
+          @if (w.invoice; as inv) {
+            <a mat-stroked-button [routerLink]="['/office/invoices', inv.id]">{{ inv.number ?? 'Draft invoice' }}</a>
+          } @else if (w.status === 'Completed') {
+            <button mat-flat-button (click)="createInvoice(w)">Create invoice</button>
           }
         </div>
       </header>
@@ -287,6 +293,8 @@ export class WorkOrderDetail {
   protected readonly api = inject(WorkOrdersApi);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly invoices = inject(InvoicesApi);
+  private readonly router = inject(Router);
   readonly id = input.required<string>();
   protected readonly label = statusLabel;
 
@@ -435,6 +443,13 @@ export class WorkOrderDetail {
     this.workOrder.set(null);
     this.loaded.reload();
     this.history.reload();
+  }
+
+  protected createInvoice(w: WorkOrder): void {
+    this.invoices.generate(w.id).subscribe({
+      next: (invoice) => void this.router.navigate(['/office/invoices', invoice.id]),
+      error: (err: unknown) => this.snackBar.open(problemMessage(err), 'Close', { duration: 6000 }),
+    });
   }
 
   private ask(data: ReasonDialogData): Observable<string> {

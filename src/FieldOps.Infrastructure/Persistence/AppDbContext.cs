@@ -4,6 +4,7 @@ using FieldOps.Domain.Common;
 using FieldOps.Domain.Customers;
 using FieldOps.Domain.Identity;
 using FieldOps.Domain.Inventory;
+using FieldOps.Domain.Invoicing;
 using FieldOps.Domain.Settings;
 using FieldOps.Domain.Technicians;
 using FieldOps.Domain.WorkOrders;
@@ -38,6 +39,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<StockLevel> StockLevels => Set<StockLevel>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<WorkOrderPart> WorkOrderParts => Set<WorkOrderPart>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)

@@ -1,5 +1,6 @@
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
+using FieldOps.Domain.Invoicing;
 using FieldOps.Domain.WorkOrders;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,12 +41,17 @@ public sealed class WorkOrderReader(IAppDbContext db, IIdentityService identity,
                 t.DoneBy is { } by && doneBy.TryGetValue(by, out var u) ? u.FullName : null))
             .ToList();
 
+        var invoice = await db.Invoices.AsNoTracking()
+            .Where(i => i.WorkOrderId == w.Id && i.Status != InvoiceStatus.Void)
+            .Select(i => new WorkOrderInvoice(i.Id, i.Number, i.Status))
+            .FirstOrDefaultAsync(ct);
+
         return new WorkOrderDto(
             w.Id, w.Number, w.Status, w.Title, w.Description, w.Type, w.Priority, w.DueBy, Overdue(w, clock.GetUtcNow()),
             w.ScheduledStart, w.ScheduledEnd, customer, site, asset, technician, requiredSkill, w.StartedAt, w.CompletedAt,
             w.CompletionNotes, w.SignedByName, w.CancelReason, tasks,
             Enum.GetValues<WorkOrderAction>().Where(a => WorkOrder.IsAllowed(w.Status, a)).ToList(),
-            WorkOrder.EditableStatuses.Contains(w.Status), w.CreatedAt, w.Version);
+            WorkOrder.EditableStatuses.Contains(w.Status), w.CreatedAt, w.Version, invoice);
     }
 
     /// <summary>Technician id → name and color, for the given (possibly null) ids.</summary>

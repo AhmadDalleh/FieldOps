@@ -103,8 +103,8 @@ erDiagram
 ### Invoicing
 | Table | Columns |
 |---|---|
-| `invoices` | id, number unique (`INV-000045`), work_order_id FK **unique**, customer_id FK, status (`Draft`/`Issued`/`Paid`/`Void`), issue_date null, due_date null, subtotal, vat_rate numeric(5,2), vat_amount, total, paid_at null, payment_reference null, void_reason null, pdf_attachment_key null, xmin |
-| `invoice_lines` | id, invoice_id FK, line_type (`Labor`/`Part`/`Other`), description, quantity numeric(10,2), unit_price, line_total |
+| `invoices` | id, number unique (`INV-000045`), work_order_id FK (**unique among non-void invoices**, a partial index, so a voided job can be re-invoiced), customer_id FK, status (`Draft`/`Issued`/`Paid`/`Void`), issue_date null, due_date null, subtotal, vat_rate numeric(5,2), vat_amount, total, paid_at null, payment_reference null, void_reason null, pdf_key null (the PDF stored at issue), xmin |
+| `invoice_lines` | id, invoice_id FK, position, line_type (`Labor`/`Part`/`Other`), description, quantity numeric(10,2), unit_price, line_total |
 
 ### System
 | Table | Columns |
