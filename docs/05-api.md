@@ -121,4 +121,11 @@ Base path: `/api`. All endpoints require a JWT except `auth/login` and `auth/ref
 | GET | /reports/revenue?from=&to=&groupBy=month\|customer&format= | A | RPT-02 |
 | GET | /reports/parts-usage?from=&to=&format= | A | RPT-03 |
 
+As built (Phase 10):
+- Report dates are inclusive Dubai dates. Without them a report covers the month so far; `from` after `to`, or more than 366 days, returns 400. `format=csv` downloads UTF-8 CSV (with a BOM for Excel) including a Total row.
+- Dashboard: "jobs by status" counts every open work order (New to On hold, zeros included); unassigned = New; overdue = open and past `due_by`; a technician is busy while En route or In progress, off during approved time off, otherwise free. The urgent list is Urgent New jobs, soonest due first (at most 10).
+- Technicians report: jobs by completion time; average duration runs from the first start to completion (holds included); work hours are logged Work time.
+- Revenue report: Issued and Paid invoices by issue date (drafts and voided excluded), with paid and outstanding columns.
+- Parts usage: parts taken for jobs in the period (returned parts drop out). Price is what was charged; cost uses the part's current unit cost, because the cost at the time of use is not stored.
+
 `T*` means a technician is allowed only when the work order is assigned to them. Otherwise the request returns 403.

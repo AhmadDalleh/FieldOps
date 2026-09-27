@@ -52,11 +52,16 @@ export class Realtime implements OnDestroy {
   }
 
   private async start(): Promise<void> {
-    const connection = new HubConnectionBuilder()
-      .withUrl('/hubs/notifications', { accessTokenFactory: () => this.token() })
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Warning)
-      .build();
+    let connection: HubConnection;
+    try {
+      connection = new HubConnectionBuilder()
+        .withUrl('/hubs/notifications', { accessTokenFactory: () => this.token() })
+        .withAutomaticReconnect()
+        .configureLogging(LogLevel.Warning)
+        .build();
+    } catch {
+      return; // no usable URL (e.g. outside a browser): the app works without live updates
+    }
     connection.on('WorkOrderChanged', (change: WorkOrderChanged) => this.changed.next(change));
     connection.on('NotificationCreated', (notification: unknown) => this.created.next(notification));
     // Automatic reconnect gives up after a few tries; keep going while signed in.

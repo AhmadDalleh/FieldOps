@@ -83,6 +83,7 @@ app.MapMeEndpoints();
 app.MapInventoryEndpoints();
 app.MapInvoiceEndpoints();
 app.MapNotificationEndpoints();
+app.MapReportEndpoints();
 app.MapHub<NotificationsHub>(NotificationsHub.Path);
 
 app.Run();

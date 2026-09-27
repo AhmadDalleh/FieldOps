@@ -137,10 +137,10 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] Live updates on the dispatch board and work order lists (completes DSP-02 AC5)
 
 ## Phase 10 — Dashboard & Reports
-- [ ] US-DSH-01 Dashboard
-- [ ] US-RPT-01 Technician report + CSV
-- [ ] US-RPT-02 Revenue report + CSV
-- [ ] US-RPT-03 Parts usage report
+- [x] US-DSH-01 Dashboard
+- [x] US-RPT-01 Technician report + CSV
+- [x] US-RPT-02 Revenue report + CSV
+- [x] US-RPT-03 Parts usage report
 
 ## Phase 11 — Hardening & Deploy
 - [ ] Complete the seed data set (03-database)
