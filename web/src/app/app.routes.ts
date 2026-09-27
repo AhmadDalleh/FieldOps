@@ -16,6 +16,14 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard) },
       {
+        path: 'customers',
+        loadComponent: () => import('./features/customers/customer-list').then((m) => m.CustomerList),
+      },
+      {
+        path: 'customers/:id',
+        loadComponent: () => import('./features/customers/customer-detail').then((m) => m.CustomerDetail),
+      },
+      {
         path: 'settings/users',
         canActivate: [roleGuard('Admin')],
         loadComponent: () => import('./features/settings/users/users').then((m) => m.Users),
