@@ -1,3 +1,4 @@
+using FieldOps.Domain.Inventory;
 using FieldOps.Application;
 using FieldOps.Application.Abstractions;
 using FieldOps.Domain.Settings;
@@ -83,6 +84,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.AppSettings.Add(AppSettings.CreateDefault());
+        db.StockLocations.Add(StockLocation.CreateMainWarehouse());
         await db.SaveChangesAsync();
     }
 

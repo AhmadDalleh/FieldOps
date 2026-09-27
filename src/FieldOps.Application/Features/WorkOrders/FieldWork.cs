@@ -68,7 +68,6 @@ public sealed class CompleteWorkOrderHandler(IAppDbContext db, ICurrentUser user
         var signatureIsValid = await db.Attachments.AnyAsync(a =>
             a.Id == input.SignatureAttachmentId && a.WorkOrderId == cmd.Id && a.Kind == AttachmentKind.Signature, ct);
 
-        // TODO(P7): ask for the parts step before completing.
         // TODO(P9): notify Office that the job is completed (US-TAPP-08 AC3).
         return await FieldWork.RunAsync(db, user, reader, cmd.Id, w => signatureIsValid
             ? w.Complete(input.CompletionNotes, input.SignedByName, input.SignatureAttachmentId, user.UserId, clock.GetUtcNow(),

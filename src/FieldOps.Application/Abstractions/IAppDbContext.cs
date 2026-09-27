@@ -30,6 +30,10 @@ public interface IAppDbContext
     DbSet<ChecklistTemplate> ChecklistTemplates { get; }
     DbSet<TimeEntry> TimeEntries { get; }
     DbSet<Attachment> Attachments { get; }
+    DbSet<Part> Parts { get; }
+    DbSet<StockLevel> StockLevels { get; }
+    DbSet<StockMovement> StockMovements { get; }
+    DbSet<WorkOrderPart> WorkOrderParts { get; }
 
     DatabaseFacade Database { get; }
 

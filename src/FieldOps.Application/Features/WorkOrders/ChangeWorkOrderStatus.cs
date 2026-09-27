@@ -40,9 +40,15 @@ public sealed class CancelWorkOrderHandler(IAppDbContext db, ICurrentUser user, 
     {
         if (!user.IsOffice()) return Task.FromResult<Result<WorkOrderDto>>(Errors.Forbidden);
 
-        // TODO(P7): return 409 while consumed parts are still on the job (US-WO-08 AC1).
         // TODO(P9): notify the assigned technician (US-WO-08 AC2).
-        return StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Cancel(cmd.Input.Reason, user.UserId, clock.GetUtcNow()), ct);
+        return RunAsync();
+
+        async Task<Result<WorkOrderDto>> RunAsync()
+        {
+            // US-WO-08 AC1: parts taken for the job must go back to stock first.
+            if (await db.WorkOrderParts.AnyAsync(p => p.WorkOrderId == cmd.Id, ct)) return WorkOrderErrors.PartsNotReturned;
+            return await StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Cancel(cmd.Input.Reason, user.UserId, clock.GetUtcNow()), ct);
+        }
     }
 }
 

@@ -65,6 +65,7 @@ app.MapTechnicianEndpoints();
 app.MapWorkOrderEndpoints();
 app.MapDispatchEndpoints();
 app.MapMeEndpoints();
+app.MapInventoryEndpoints();
 
 app.Run();
 

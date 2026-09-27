@@ -43,6 +43,15 @@ public static class WorkOrderErrors
     public static readonly Error TimeEntryOverlap = Error.Conflict("WorkOrder.TimeEntryOverlap",
         "This overlaps another of the technician's time entries.");
 
+    public static readonly Error PartLineNotFound = Error.NotFound("WorkOrder.PartLineNotFound", "The part line was not found.");
+    public static readonly Error PartsLocked = Error.Conflict("WorkOrder.PartsLocked",
+        "Parts cannot change once the job is completed or cancelled.");
+    public static readonly Error PartsNotReturned = Error.Conflict("WorkOrder.PartsNotReturned",
+        "Return the parts used on this job before cancelling it.");
+
+    public static Error PartsNotAllowedNow(WorkOrderStatus status) =>
+        Error.Conflict("WorkOrder.PartsNotAllowedNow", $"Parts can be recorded once the job is started, not while it is {status}.");
+
     public static Error InvalidTransition(WorkOrderStatus from, WorkOrderAction action) =>
         Error.Conflict("WorkOrder.InvalidTransition", $"A work order that is {from} cannot {action}.");
 }

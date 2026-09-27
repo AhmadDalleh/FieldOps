@@ -134,6 +134,17 @@ public static class WorkOrderEndpoints
             })
             .DisableAntiforgery();
 
+        // Parts used (US-TAPP-07)
+        group.MapGet("/{id:guid}/parts", async (Guid id, ListWorkOrderPartsHandler handler, CancellationToken ct) =>
+            (await handler.Handle(new ListWorkOrderPartsQuery(id), ct)).ToHttp());
+
+        group.MapPost("/{id:guid}/parts", async (Guid id, UsePartInput input, AddWorkOrderPartHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new AddWorkOrderPartCommand(id, input), ct)).ToHttp())
+            .Validate<UsePartInput>();
+
+        group.MapDelete("/{id:guid}/parts/{lineId:guid}", async (Guid id, Guid lineId, RemoveWorkOrderPartHandler handler, CancellationToken ct) =>
+            (await handler.Handle(new RemoveWorkOrderPartCommand(id, lineId), ct)).ToHttp());
+
         // Time log (US-TAPP-09)
         group.MapGet("/{id:guid}/time-entries", async (Guid id, ListTimeEntriesHandler handler, CancellationToken ct) =>
             (await handler.Handle(new ListTimeEntriesQuery(id), ct)).ToHttp());
