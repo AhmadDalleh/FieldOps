@@ -29,6 +29,9 @@ public sealed class WorkOrderReader(IAppDbContext db, IIdentityService identity,
                 .SingleAsync(ct);
 
         var technician = (await TechniciansAsync([w.AssignedTechnicianId], ct)).GetValueOrDefault(w.AssignedTechnicianId ?? Guid.Empty);
+        var requiredSkill = w.RequiredSkillId is null
+            ? null
+            : await db.Skills.AsNoTracking().Where(s => s.Id == w.RequiredSkillId).Select(s => new SkillRef(s.Id, s.Name)).SingleAsync(ct);
         var doneBy = await identity.FindByIdsAsync(w.Tasks.Where(t => t.DoneBy != null).Select(t => t.DoneBy!.Value), ct);
 
         var tasks = w.Tasks
@@ -39,7 +42,7 @@ public sealed class WorkOrderReader(IAppDbContext db, IIdentityService identity,
 
         return new WorkOrderDto(
             w.Id, w.Number, w.Status, w.Title, w.Description, w.Type, w.Priority, w.DueBy, Overdue(w, clock.GetUtcNow()),
-            w.ScheduledStart, w.ScheduledEnd, customer, site, asset, technician, w.StartedAt, w.CompletedAt,
+            w.ScheduledStart, w.ScheduledEnd, customer, site, asset, technician, requiredSkill, w.StartedAt, w.CompletedAt,
             w.CompletionNotes, w.SignedByName, w.CancelReason, tasks,
             Enum.GetValues<WorkOrderAction>().Where(a => WorkOrder.IsAllowed(w.Status, a)).ToList(),
             WorkOrder.EditableStatuses.Contains(w.Status), w.CreatedAt, w.Version);

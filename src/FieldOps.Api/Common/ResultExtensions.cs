@@ -18,6 +18,7 @@ public static class ResultExtensions
 
         var extensions = new Dictionary<string, object?> { ["code"] = error.Code };
         if (error.Details is not null) extensions["errors"] = error.Details;
+        foreach (var (key, value) in error.Extensions ?? new Dictionary<string, object?>()) extensions[key] = value;
 
         return Results.Problem(
             type: $"https://fieldops/errors/{error.Type.ToString().ToLowerInvariant()}",

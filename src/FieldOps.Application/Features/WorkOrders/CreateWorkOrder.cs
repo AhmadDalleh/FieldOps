@@ -1,5 +1,6 @@
 using FieldOps.Application.Abstractions;
 using FieldOps.Domain.Common;
+using FieldOps.Domain.Technicians;
 using FieldOps.Domain.WorkOrders;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,9 @@ public sealed class CreateWorkOrderHandler(
         if (input.AssetId is { } assetId && !await db.Assets.AnyAsync(a => a.Id == assetId && a.SiteId == input.SiteId, ct))
             return WorkOrderErrors.AssetNotOfSite;
 
+        if (input.RequiredSkillId is { } skillId && !await db.Skills.AnyAsync(s => s.Id == skillId, ct))
+            return TechnicianErrors.SkillNotFound;
+
         var template = await db.ChecklistTemplates.AsNoTracking()
             .Include(t => t.Items)
             .Where(t => t.IsActive && t.WorkOrderType == input.Type)
@@ -33,7 +37,7 @@ public sealed class CreateWorkOrderHandler(
         // The number comes from the same transaction as the insert, so a failed save does not use it up.
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var next = await numbers.NextAsync(SequenceName, ct);
-        var details = WorkOrderInputRules.ToDetails(input.Title, input.Description, input.Type, input.Priority, input.DueBy, input.AssetId);
+        var details = WorkOrderInputRules.ToDetails(input.Title, input.Description, input.Type, input.Priority, input.DueBy, input.AssetId, input.RequiredSkillId);
         var workOrder = WorkOrder.Create($"WO-{next:000000}", input.CustomerId, input.SiteId, details, tasks, user.UserId, clock.GetUtcNow());
         db.WorkOrders.Add(workOrder);
         await db.SaveChangesAsync(ct);

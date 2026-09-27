@@ -42,6 +42,24 @@ public static class WorkOrderEndpoints
         group.MapGet("/{id:guid}/history", async (Guid id, GetWorkOrderHistoryHandler handler, CancellationToken ct) =>
             (await handler.Handle(new GetWorkOrderHistoryQuery(id), ct)).ToHttp());
 
+        // Scheduling and dispatch
+        group.MapPost("/{id:guid}/schedule", async (Guid id, ScheduleInput input, ScheduleWorkOrderHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new ScheduleWorkOrderCommand(id, input), ct)).ToHttp())
+            .Validate<ScheduleInput>()
+            .RequireAuthorization(Policies.OfficeStaff);
+
+        group.MapPost("/{id:guid}/unassign", async (Guid id, UnassignWorkOrderHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new UnassignWorkOrderCommand(id), ct)).ToHttp())
+            .RequireAuthorization(Policies.OfficeStaff);
+
+        group.MapPost("/{id:guid}/dispatch", async (Guid id, DispatchWorkOrderHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new DispatchWorkOrderCommand(id), ct)).ToHttp())
+            .RequireAuthorization(Policies.OfficeStaff);
+
+        group.MapPost("/dispatch-day", async (DispatchDayInput input, DispatchDayHandler handler, CancellationToken ct) =>
+                (await handler.Handle(new DispatchDayCommand(input), ct)).ToHttp())
+            .RequireAuthorization(Policies.OfficeStaff);
+
         // Status workflow
         group.MapPost("/{id:guid}/hold", async (Guid id, HoldInput input, HoldWorkOrderHandler handler, CancellationToken ct) =>
             (await handler.Handle(new HoldWorkOrderCommand(id, input), ct)).ToHttp());

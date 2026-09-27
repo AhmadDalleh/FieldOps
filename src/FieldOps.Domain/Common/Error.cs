@@ -4,6 +4,9 @@ public enum ErrorType { Validation, NotFound, Conflict, Forbidden, Unauthorized 
 
 public sealed record Error(string Code, string Message, ErrorType Type, IReadOnlyDictionary<string, string[]>? Details = null)
 {
+    /// <summary>Extra machine-readable data for the client, added to the ProblemDetails response.</summary>
+    public IReadOnlyDictionary<string, object?>? Extensions { get; init; }
+
     public static Error Validation(string code, string message, IReadOnlyDictionary<string, string[]>? details = null) =>
         new(code, message, ErrorType.Validation, details);
 

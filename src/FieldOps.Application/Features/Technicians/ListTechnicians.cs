@@ -1,6 +1,7 @@
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
 using FieldOps.Domain.Technicians;
+using FieldOps.Domain.WorkOrders;
 using Microsoft.EntityFrameworkCore;
 
 namespace FieldOps.Application.Features.Technicians;
@@ -33,8 +34,12 @@ public sealed class ListTechniciansHandler(IAppDbContext db, TechnicianReader re
             .ToListAsync(ct);
         var timeOffByTechnician = timeOff.ToLookup(t => t.TechnicianId);
 
-        // TODO(P5): count the technician's scheduled work orders on this day (US-TEC-04).
-        const int jobCount = 0;
+        var jobCounts = await db.WorkOrders.AsNoTracking()
+            .Where(w => w.AssignedTechnicianId != null && w.Status != WorkOrderStatus.Cancelled
+                && w.ScheduledStart >= from && w.ScheduledStart < to)
+            .GroupBy(w => w.AssignedTechnicianId!.Value)
+            .Select(g => new { TechnicianId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.TechnicianId, x => x.Count, ct);
 
         return technicians
             .Select(t =>
@@ -43,7 +48,7 @@ public sealed class ListTechniciansHandler(IAppDbContext db, TechnicianReader re
                     .OrderBy(x => x.StartsAt)
                     .Select(x => new TimeOffSlot(x.Id, x.StartsAt, x.EndsAt, x.Reason))
                     .ToList();
-                return new TechnicianAvailabilityDto(t, day, jobCount, slots, t.IsActive && slots.Count == 0);
+                return new TechnicianAvailabilityDto(t, day, jobCounts.GetValueOrDefault(t.Id), slots, t.IsActive && slots.Count == 0);
             })
             .ToList();
     }
