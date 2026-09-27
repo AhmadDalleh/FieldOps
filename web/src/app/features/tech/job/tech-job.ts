@@ -18,6 +18,7 @@ import { dubaiLocalToUtc, utcToDubaiLocal } from '../../../shared/time/dubai-tim
 import { DubaiTimePipe } from '../../../shared/time/dubai-time.pipe';
 import { WarrantyBadge } from '../../../shared/ui/warranty-badge/warranty-badge';
 import { AssetHistoryDialog } from '../../assets/asset-history-dialog';
+import { WorkOrderPartsPanel } from '../../inventory/work-order-parts';
 import { ReasonDialog, ReasonDialogData } from '../../work-orders/reason-dialog';
 import { PriorityChip, StatusChip } from '../../work-orders/work-order-labels';
 import { WorkOrder, WorkOrderStatus, WorkOrdersApi } from '../../work-orders/work-orders.api';
@@ -48,6 +49,7 @@ export function formatMinutes(minutes: number | null): string {
 @Component({
   selector: 'app-tech-job',
   imports: [
+    WorkOrderPartsPanel,
     FormsModule, RouterLink, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, DubaiTimePipe,
     StatusChip, PriorityChip, WarrantyBadge, SecureImage,
   ],
@@ -135,6 +137,11 @@ export function formatMinutes(minutes: number | null): string {
         } @empty {
           <p class="muted">No checklist for this job.</p>
         }
+      </section>
+
+      <section class="block">
+        <h2>Parts used</h2>
+        <app-work-order-parts [workOrderId]="w.id" [canAdd]="w.status === 'InProgress' || w.status === 'OnHold'" />
       </section>
 
       <section class="block">

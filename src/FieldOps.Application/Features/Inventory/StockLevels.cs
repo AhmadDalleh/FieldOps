@@ -66,7 +66,7 @@ public sealed class ListStockLocationsHandler(IAppDbContext db) : IQueryHandler<
 {
     public async Task<IReadOnlyList<StockLocationDto>> Handle(ListStockLocationsQuery query, CancellationToken ct) =>
         await db.StockLocations.AsNoTracking()
-            .OrderBy(l => l.Type).ThenBy(l => l.Name)
+            .OrderBy(l => l.Type == StockLocationType.Van).ThenBy(l => l.Name) // the enum is stored as text, so sort explicitly
             .Select(l => new StockLocationDto(l.Id, l.Name, l.Type, l.TechnicianId, l.IsActive))
             .ToListAsync(ct);
 }

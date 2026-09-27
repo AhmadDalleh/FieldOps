@@ -44,7 +44,8 @@ public class InventoryApiTests(ApiFactory factory) : ApiTestBase(factory)
         (await technician.GetAsync("/api/parts")).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
 
         var locations = await dispatcher.GetFromJsonAsync<List<StockLocationDto>>("/api/stock-locations", Json.Options);
-        var van = locations!.First(l => l.Type == StockLocationType.Van);
+        locations![0].Id.ShouldBe(Warehouse); // warehouses first, then vans by name
+        var van = locations.First(l => l.Type == StockLocationType.Van);
         (await dispatcher.PostAsJsonAsync("/api/stock/receive", new { partId = part.Id, locationId = Warehouse, quantity = 10 }))
             .StatusCode.ShouldBe(HttpStatusCode.OK);
         (await dispatcher.PostAsJsonAsync("/api/stock/transfer",
