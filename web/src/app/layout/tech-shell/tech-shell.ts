@@ -19,6 +19,7 @@ import { AuthService } from '../../core/auth.service';
       <main class="content"><router-outlet /></main>
       <nav class="bottom-nav">
         <a routerLink="my-jobs" routerLinkActive="active"><mat-icon>work</mat-icon><span>My jobs</span></a>
+        <a routerLink="time-off" routerLinkActive="active"><mat-icon>event_busy</mat-icon><span>Time off</span></a>
         <a routerLink="account/password" routerLinkActive="active"><mat-icon>person</mat-icon><span>Account</span></a>
       </nav>
     </div>

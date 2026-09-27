@@ -24,6 +24,19 @@ export const routes: Routes = [
         loadComponent: () => import('./features/customers/customer-detail').then((m) => m.CustomerDetail),
       },
       {
+        path: 'technicians',
+        loadComponent: () => import('./features/technicians/technician-list').then((m) => m.TechnicianList),
+      },
+      {
+        path: 'time-off',
+        loadComponent: () => import('./features/time-off/time-off-approvals').then((m) => m.TimeOffApprovals),
+      },
+      {
+        path: 'settings/skills',
+        canActivate: [roleGuard('Admin')],
+        loadComponent: () => import('./features/technicians/skills').then((m) => m.Skills),
+      },
+      {
         path: 'settings/users',
         canActivate: [roleGuard('Admin')],
         loadComponent: () => import('./features/settings/users/users').then((m) => m.Users),
@@ -48,6 +61,7 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'my-jobs' },
       { path: 'my-jobs', loadComponent: () => import('./features/tech/my-jobs/my-jobs').then((m) => m.MyJobs) },
+      { path: 'time-off', loadComponent: () => import('./features/time-off/my-time-off').then((m) => m.MyTimeOff) },
       {
         path: 'account/password',
         loadComponent: () =>
