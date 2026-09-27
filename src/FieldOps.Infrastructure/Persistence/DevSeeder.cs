@@ -2,12 +2,13 @@ using FieldOps.Application.Features.Settings;
 using FieldOps.Application.Features.Users;
 using FieldOps.Domain.Identity;
 using FieldOps.Domain.Technicians;
+using FieldOps.Domain.WorkOrders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FieldOps.Infrastructure.Persistence;
 
-/// <summary>Creates the development users and skills. Runs in Development only and is safe to run repeatedly.</summary>
+/// <summary>Creates the development users, skills and checklist templates. Runs in Development only and is safe to run repeatedly.</summary>
 public sealed class DevSeeder(
     AppDbContext db,
     CreateUserHandler createUser,
@@ -34,6 +35,17 @@ public sealed class DevSeeder(
         if (!await db.Skills.AnyAsync(ct))
         {
             db.Skills.AddRange(Skills.Select(Skill.Create));
+            await db.SaveChangesAsync(ct);
+        }
+
+        if (!await db.ChecklistTemplates.AnyAsync(ct))
+        {
+            db.ChecklistTemplates.AddRange(
+                ChecklistTemplate.Create("AC preventive maintenance", WorkOrderType.Maintenance,
+                    ["Clean or replace the air filters", "Check refrigerant pressure", "Clean the condenser coil",
+                     "Check the drain line", "Record supply and return temperatures"]),
+                ChecklistTemplate.Create("Site inspection", WorkOrderType.Inspection,
+                    ["Walk the site with the customer", "Photograph each asset", "List defects and recommendations"]));
             await db.SaveChangesAsync(ct);
         }
 

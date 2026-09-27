@@ -12,11 +12,7 @@ public class TechnicianProfileTests(PostgresFixture fixture) : TestBase(fixture)
     private static TechnicianInput Input(string code = "TEC-100", string color = "#1e88e5", params Guid[] skillIds) =>
         new(code, "+971501112233", color, 45.5m, new TimeOnly(8, 0), new TimeOnly(17, 0), skillIds);
 
-    private async Task<Guid> GivenTechnician()
-    {
-        var user = await GivenUser(Role.Technician);
-        return await NewDb().Technicians.Where(t => t.UserId == user.Id).Select(t => t.Id).SingleAsync();
-    }
+    private new async Task<Guid> GivenTechnician() => (await base.GivenTechnician()).TechnicianId;
 
     private async Task<SkillDto> GivenSkill(string name) =>
         (await Resolve<CreateSkillHandler>().Handle(new CreateSkillCommand(new SkillInput(name)), default)).Value;

@@ -26,10 +26,10 @@ public static class AssetEndpoints
 
         var group = app.MapGroup("/api/assets").WithTags("Assets");
 
-        // TODO(P4): technicians may read an asset that is on one of their work orders.
+        // Technicians are allowed through; the handler limits them to assets on their own work orders.
         group.MapGet("/{id:guid}", async (Guid id, GetAssetHandler handler, CancellationToken ct) =>
                 (await handler.Handle(new GetAssetQuery(id), ct)).ToHttp())
-            .RequireAuthorization(Policies.OfficeStaff);
+            .RequireAuthorization();
 
         group.MapPut("/{id:guid}", async (Guid id, AssetInput input, UpdateAssetHandler handler, CancellationToken ct) =>
                 (await handler.Handle(new UpdateAssetCommand(id, input), ct)).ToHttp())

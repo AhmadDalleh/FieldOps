@@ -13,13 +13,6 @@ public class TechnicianAvailabilityTests(PostgresFixture fixture) : TestBase(fix
     // The fixture clock is 2026-10-01 06:00 UTC, which is 10:00 on 1 October in Dubai.
     private static readonly DateOnly Today = new(2026, 10, 1);
 
-    private async Task<(Guid UserId, Guid TechnicianId)> GivenTechnician()
-    {
-        var user = await GivenUser(Role.Technician);
-        var technicianId = await NewDb().Technicians.Where(t => t.UserId == user.Id).Select(t => t.Id).SingleAsync();
-        return (user.Id, technicianId);
-    }
-
     private async Task GivenTimeOff(Guid technicianId, DateTimeOffset startsAt, DateTimeOffset endsAt, bool? approve)
     {
         var db = NewDb();
