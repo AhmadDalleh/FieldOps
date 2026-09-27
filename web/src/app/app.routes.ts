@@ -77,6 +77,7 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'my-jobs' },
       { path: 'my-jobs', loadComponent: () => import('./features/tech/my-jobs/my-jobs').then((m) => m.MyJobs) },
+      { path: 'jobs/:id', loadComponent: () => import('./features/tech/job/tech-job').then((m) => m.TechJob) },
       { path: 'time-off', loadComponent: () => import('./features/time-off/my-time-off').then((m) => m.MyTimeOff) },
       {
         path: 'account/password',

@@ -98,16 +98,16 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] US-DSP-05 Map view
 
 ## Phase 6 — Technician app
-- [ ] US-TAPP-01 My jobs
-- [ ] US-TAPP-02 Job detail
-- [ ] US-TAPP-03 On my way
-- [ ] US-TAPP-04 Start
-- [ ] US-TAPP-05 Hold
-- [ ] US-TAPP-06 Photos (`IFileStorage`, `LocalFileStorage`)
-- [ ] US-TAPP-09 Time log
-- [ ] US-TAPP-08 Complete with signature (the parts step is added in P7)
-- [ ] US-TAPP-10 PWA manifest, service worker, and offline banner
-- [ ] Playwright E2E: dispatcher creates and schedules a job, then the technician goes en-route, starts, and completes it
+- [x] US-TAPP-01 My jobs
+- [x] US-TAPP-02 Job detail
+- [x] US-TAPP-03 On my way
+- [x] US-TAPP-04 Start
+- [x] US-TAPP-05 Hold
+- [x] US-TAPP-06 Photos (`IFileStorage`, `LocalFileStorage`)
+- [x] US-TAPP-09 Time log
+- [x] US-TAPP-08 Complete with signature (the parts step is added in P7)
+- [x] US-TAPP-10 PWA manifest, service worker, and offline banner
+- [x] Playwright E2E: dispatcher creates and schedules a job, then the technician goes en-route, starts, and completes it
 
 ## Phase 7 — Parts & Inventory
 - [ ] US-INV-01 Parts catalog
