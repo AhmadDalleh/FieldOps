@@ -32,6 +32,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/work-orders/work-order-detail').then((m) => m.WorkOrderDetail),
       },
       {
+        path: 'dispatch',
+        loadComponent: () => import('./features/dispatch/dispatch-board').then((m) => m.DispatchBoard),
+      },
+      {
+        path: 'dispatch/map',
+        loadComponent: () => import('./features/dispatch/dispatch-map').then((m) => m.DispatchMap),
+      },
+      {
         path: 'technicians',
         loadComponent: () => import('./features/technicians/technician-list').then((m) => m.TechnicianList),
       },

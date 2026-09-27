@@ -12,6 +12,7 @@ import { dubaiLocalToUtc, utcToDubaiLocal } from '../../shared/time/dubai-time';
 import { WarrantyBadge } from '../../shared/ui/warranty-badge/warranty-badge';
 import { AssetsApi } from '../assets/assets.api';
 import { CustomersApi } from '../customers/customers.api';
+import { TechniciansApi } from '../technicians/technicians.api';
 import { PRIORITIES, TYPES, WorkOrder, WorkOrderPriority, WorkOrderType, WorkOrdersApi } from './work-orders.api';
 
 export interface WorkOrderDialogData {
@@ -89,6 +90,15 @@ export interface WorkOrderDialogData {
           </mat-form-field>
         </div>
         <mat-form-field appearance="outline">
+          <mat-label>Required skill (optional)</mat-label>
+          <mat-select formControlName="requiredSkillId">
+            <mat-option [value]="''">None</mat-option>
+            @for (s of skills.value() ?? []; track s.id) {
+              <mat-option [value]="s.id">{{ s.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
           <mat-label>Due by (Dubai time)</mat-label>
           <input matInput type="datetime-local" formControlName="dueBy" />
           @if (priority() === 'Urgent' && !dueBy() && !editing) {
@@ -136,6 +146,7 @@ export class WorkOrderDialog {
     type: [this.editing?.type ?? ('Repair' as WorkOrderType), Validators.required],
     priority: [this.editing?.priority ?? ('Medium' as WorkOrderPriority), Validators.required],
     dueBy: [this.editing?.dueBy ? utcToDubaiLocal(this.editing.dueBy) : ''],
+    requiredSkillId: [this.editing?.requiredSkill?.id ?? ''],
   });
 
   protected readonly customerName = signal(this.editing?.customer.name ?? this.data.customer?.name ?? '');
@@ -155,6 +166,8 @@ export class WorkOrderDialog {
     params: () => (this.editing ? undefined : this.customerId() || undefined),
     stream: ({ params }) => this.customersApi.sites(params, false),
   });
+  private readonly techniciansApi = inject(TechniciansApi);
+  protected readonly skills = rxResource({ stream: () => this.techniciansApi.skills() });
   private readonly assets = rxResource({
     params: () => this.customerId() || undefined,
     stream: ({ params }) => this.assetsApi.forCustomer(params),
@@ -194,6 +207,7 @@ export class WorkOrderDialog {
       priority: v.priority,
       dueBy: v.dueBy ? dubaiLocalToUtc(v.dueBy) : null,
       assetId: v.assetId || null,
+      requiredSkillId: v.requiredSkillId || null,
     };
     const request = this.editing
       ? this.api.update(this.editing.id, { ...common, version: this.editing.version })

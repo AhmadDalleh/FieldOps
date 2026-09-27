@@ -91,11 +91,11 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] Complete the deferred rules: CUS-04 AC1, SITE-02, and AST-02
 
 ## Phase 5 — Scheduling & Dispatch
-- [ ] US-DSP-01 Assign & schedule (overlap, time-off, and skill checks)
-- [ ] US-DSP-04 Unassign
-- [ ] US-DSP-03 Dispatch / dispatch day
-- [ ] US-DSP-02 Dispatch board (CDK drag-drop and resize; live updates arrive in P9, so use manual refresh for now)
-- [ ] US-DSP-05 Map view
+- [x] US-DSP-01 Assign & schedule (overlap, time-off, and skill checks)
+- [x] US-DSP-04 Unassign
+- [x] US-DSP-03 Dispatch / dispatch day
+- [x] US-DSP-02 Dispatch board (CDK drag-drop and resize; live updates arrive in P9, so use manual refresh for now)
+- [x] US-DSP-05 Map view
 
 ## Phase 6 — Technician app
 - [ ] US-TAPP-01 My jobs
