@@ -8,11 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace FieldOps.Infrastructure.Persistence;
 
-/// <summary>Creates the development users, skills and checklist templates. Runs in Development only and is safe to run repeatedly.</summary>
+/// <summary>Creates the development users, skills, checklist templates and sample company data (<see cref="DemoDataSeeder"/>). Runs in Development only and is safe to run repeatedly.</summary>
 public sealed class DevSeeder(
     AppDbContext db,
     CreateUserHandler createUser,
     UpdateSettingsHandler updateSettings,
+    DemoDataSeeder demoData,
     ILogger<DevSeeder> logger)
 {
     public const string Password = "Pass123!";
@@ -49,8 +50,12 @@ public sealed class DevSeeder(
             await db.SaveChangesAsync(ct);
         }
 
-        if (await db.Users.AnyAsync(ct)) return;
+        if (!await db.Users.AnyAsync(ct)) await SeedUsersAsync(ct);
+        await demoData.SeedAsync(ct);
+    }
 
+    private async Task SeedUsersAsync(CancellationToken ct)
+    {
         foreach (var (fullName, email, role) in Users)
         {
             var result = await createUser.Handle(new CreateUserCommand(fullName, email, null, role, Password), ct);

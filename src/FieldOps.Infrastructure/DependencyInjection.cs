@@ -60,6 +60,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddSingleton(configuration.GetSection(NotificationOptions.SectionName).Get<NotificationOptions>() ?? new NotificationOptions());
         services.AddScoped<DevSeeder>();
+        services.AddScoped<DemoDataSeeder>();
 
         return services;
     }

@@ -143,8 +143,8 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] US-RPT-03 Parts usage report
 
 ## Phase 11 — Hardening & Deploy
-- [ ] Complete the seed data set (03-database)
-- [ ] Rate limiting on `/auth/*`, security headers, and HTTPS redirection
+- [x] Complete the seed data set (03-database)
+- [x] Rate limiting on `/auth/*`, security headers, and HTTPS redirection
 - [ ] Dockerfile (API serves the Angular build), with production config from environment variables
 - [ ] Backup note for Postgres, and a README with run and deploy steps
 - [ ] Manual test pass of every epic on a phone and a desktop
