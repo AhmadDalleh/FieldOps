@@ -32,6 +32,13 @@ public sealed class IdentityService(UserManager<AppUser> users, AppDbContext db)
         return row?.ToInfo();
     }
 
+    public async Task<IReadOnlyDictionary<Guid, UserInfo>> FindByIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct)
+    {
+        var ids = userIds.Distinct().ToList();
+        var rows = await Query().Where(u => ids.Contains(u.Id)).ToListAsync(ct);
+        return rows.ToDictionary(r => r.Id, r => r.ToInfo());
+    }
+
     public async Task<PagedResult<UserInfo>> ListAsync(PageRequest page, CancellationToken ct)
     {
         var query = Query();

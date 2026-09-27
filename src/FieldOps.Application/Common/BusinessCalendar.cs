@@ -7,4 +7,14 @@ public static class BusinessCalendar
 
     public static DateOnly Today(this TimeProvider clock) =>
         DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), TimeZone).DateTime);
+
+    /// <summary>The UTC instants where the given Dubai calendar day starts (inclusive) and ends (exclusive).</summary>
+    public static (DateTimeOffset From, DateTimeOffset To) DayRange(DateOnly day)
+    {
+        var start = day.ToDateTime(TimeOnly.MinValue);
+        var from = new DateTimeOffset(start, TimeZone.GetUtcOffset(start)).ToUniversalTime();
+        var nextStart = start.AddDays(1);
+        var to = new DateTimeOffset(nextStart, TimeZone.GetUtcOffset(nextStart)).ToUniversalTime();
+        return (from, to);
+    }
 }
