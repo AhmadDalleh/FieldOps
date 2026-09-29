@@ -1,4 +1,6 @@
 using FieldOps.Application.Abstractions;
+using FieldOps.Domain.Common;
+using FieldOps.Domain.Customers;
 using FieldOps.Domain.Identity;
 using FieldOps.Domain.Inventory;
 using FieldOps.Domain.Settings;
@@ -17,12 +19,20 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Technician> Technicians => Set<Technician>();
     public DbSet<StockLocation> StockLocations => Set<StockLocation>();
     public DbSet<AppSettings> AppSettings => Set<AppSettings>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
+    public DbSet<Site> Sites => Set<Site>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.HasPostgresExtension("pg_trgm");
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Ids are Guid v7 values created in the domain, so EF must treat a new child with an id as Added, not Modified.
+        foreach (var entity in builder.Model.GetEntityTypes().Where(e => typeof(Entity).IsAssignableFrom(e.ClrType)))
+            builder.Entity(entity.ClrType).Property(nameof(Entity.Id)).ValueGeneratedNever();
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)

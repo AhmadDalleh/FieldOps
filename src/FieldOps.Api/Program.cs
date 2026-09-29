@@ -58,6 +58,8 @@ app.MapHealthChecks("/health");
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapSettingsEndpoints();
+app.MapCustomerEndpoints();
+app.MapSiteEndpoints();
 
 app.Run();
 

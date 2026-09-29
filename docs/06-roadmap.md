@@ -58,13 +58,13 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 **Demo:** the Admin logs in, creates a technician user, and that technician logs in and lands on an empty "My jobs" screen.
 
 ## Phase 1 — Customers & Sites
-- [ ] US-CUS-01 Create customer
-- [ ] US-CUS-02 Search/list
-- [ ] US-CUS-03 Customer detail (tabs; empty tabs for future features are fine)
-- [ ] US-CUS-04 Edit/deactivate (the open-work-order rule is added in P4 once work orders exist; leave a TODO test)
-- [ ] US-CUS-05 Contacts
-- [ ] US-SITE-01 Add site with map pin (the shared `map-picker` component)
-- [ ] US-SITE-02 Edit/deactivate site
+- [x] US-CUS-01 Create customer
+- [x] US-CUS-02 Search/list
+- [x] US-CUS-03 Customer detail (tabs; empty tabs for future features are fine)
+- [x] US-CUS-04 Edit/deactivate (the open-work-order rule is added in P4 once work orders exist; leave a TODO test)
+- [x] US-CUS-05 Contacts
+- [x] US-SITE-01 Add site with map pin (the shared `map-picker` component)
+- [x] US-SITE-02 Edit/deactivate site
 
 ## Phase 2 — Assets
 - [ ] US-AST-01 Register asset
