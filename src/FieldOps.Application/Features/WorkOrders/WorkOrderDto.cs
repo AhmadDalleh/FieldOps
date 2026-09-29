@@ -1,4 +1,5 @@
 using FieldOps.Domain.Assets;
+using FieldOps.Domain.Invoicing;
 using FieldOps.Domain.WorkOrders;
 
 namespace FieldOps.Application.Features.WorkOrders;
@@ -44,7 +45,11 @@ public sealed record WorkOrderDto(
     IReadOnlyList<WorkOrderAction> AllowedActions,
     bool IsEditable,
     DateTimeOffset CreatedAt,
-    uint Version);
+    uint Version,
+    WorkOrderInvoice? Invoice);
+
+/// <summary>The work order's live (not voided) invoice, if any.</summary>
+public sealed record WorkOrderInvoice(Guid Id, string? Number, InvoiceStatus Status);
 
 public sealed record WorkOrderListItem(
     Guid Id,

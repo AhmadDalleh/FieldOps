@@ -52,6 +52,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/inventory/movements').then((m) => m.Movements),
       },
       {
+        path: 'invoices',
+        loadComponent: () => import('./features/invoices/invoice-list').then((m) => m.InvoiceList),
+      },
+      {
+        path: 'invoices/:id',
+        loadComponent: () => import('./features/invoices/invoice-detail').then((m) => m.InvoiceDetail),
+      },
+      {
         path: 'technicians',
         loadComponent: () => import('./features/technicians/technician-list').then((m) => m.TechnicianList),
       },

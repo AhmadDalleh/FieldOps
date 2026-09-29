@@ -89,6 +89,8 @@ export interface WorkOrder {
   isEditable: boolean;
   createdAt: string;
   version: number;
+  /** The live (not voided) invoice, if any. */
+  invoice: { id: string; number: string | null; status: 'Draft' | 'Issued' | 'Paid' | 'Void' } | null;
 }
 
 export interface WorkOrderListItem {

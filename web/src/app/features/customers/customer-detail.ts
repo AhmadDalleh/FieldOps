@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
 import { problemMessage } from '../../core/problem';
 import { CustomerAssets } from '../assets/customer-assets';
+import { CustomerInvoices } from '../invoices/customer-invoices';
 import { CustomerWorkOrders } from '../work-orders/customer-work-orders';
 import { ConfirmDialog, ConfirmData } from '../../shared/ui/confirm-dialog/confirm-dialog';
 import { ContactDialog, ContactDialogData } from './contact-dialog';
@@ -20,7 +21,7 @@ import { SiteDialog, SiteDialogData } from './site-dialog';
 
 @Component({
   selector: 'app-customer-detail',
-  imports: [MatTabsModule, MatButtonModule, MatTableModule, MatChipsModule, MatSlideToggleModule, RouterLink, CustomerAssets, CustomerWorkOrders],
+  imports: [MatTabsModule, MatButtonModule, MatTableModule, MatChipsModule, MatSlideToggleModule, RouterLink, CustomerAssets, CustomerWorkOrders, CustomerInvoices],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a routerLink="/office/customers" class="back">← Customers</a>
@@ -137,7 +138,7 @@ import { SiteDialog, SiteDialogData } from './site-dialog';
             <app-customer-work-orders [customerId]="c.id" [customerName]="c.name" [customerActive]="c.isActive" />
           </ng-template>
         </mat-tab>
-        <mat-tab label="Invoices"><p class="empty">Invoices arrive in Phase 8.</p></mat-tab>
+        <mat-tab label="Invoices"><app-customer-invoices [customerId]="c.id" /></mat-tab>
       </mat-tab-group>
     }
   `,

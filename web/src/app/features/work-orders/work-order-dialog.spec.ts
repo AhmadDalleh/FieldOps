@@ -33,6 +33,7 @@ const existing: WorkOrder = {
   isEditable: true,
   createdAt: '2026-09-30T04:00:00Z',
   version: 812,
+  invoice: null,
 };
 
 describe('WorkOrderDialog', () => {

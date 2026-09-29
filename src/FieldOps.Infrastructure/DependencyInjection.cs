@@ -2,6 +2,7 @@ using System.Text;
 using FieldOps.Application.Abstractions;
 using FieldOps.Infrastructure.Files;
 using FieldOps.Infrastructure.Identity;
+using FieldOps.Infrastructure.Pdf;
 using FieldOps.Infrastructure.Persistence;
 using FieldOps.Infrastructure.Persistence.Interceptors;
 using Microsoft.AspNetCore.Identity;
@@ -51,6 +52,7 @@ public static class DependencyInjection
         services.AddSingleton<ITokenService, JwtTokenService>();
         services.AddScoped<INumberSequence, NumberSequenceService>();
         services.AddSingleton<IFileStorage, LocalFileStorage>();
+        services.AddSingleton<IInvoicePdfRenderer, InvoicePdfGenerator>();
         services.AddScoped<DevSeeder>();
 
         return services;
