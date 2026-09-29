@@ -173,6 +173,11 @@ sequenceDiagram
 - As built (Phase 9): handlers call the Application `Notifier`, which stores `Notification` rows and queues pushes and technician emails. `WorkOrderChanged` is raised by a `SaveChanges` interceptor for every saved work order, so no handler can forget it. Pushes and emails go out only after the save succeeds, and a failing push or email is logged, never surfaced to the user. Inside an explicit transaction a push can precede the commit; the client simply reloads.
 - The Angular side is `core/realtime.ts` (connection, reconnects, `onWorkOrderChange()`) plus `features/notifications/` (store and bell), rather than a single `notifications.service.ts`.
 
+## Security hardening (Phase 11)
+- `/api/auth/*` is rate limited per client address (fixed window, `RateLimiting:Auth:PermitLimit` per `WindowSeconds`, default 10 per 60 s); over the limit returns 429 ProblemDetails with `Retry-After`.
+- Every response carries `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` (geolocation and camera for the technician app only) and a Content-Security-Policy suited to the Angular build (Swagger, in Development, is exempt).
+- Outside Development and tests: HSTS and HTTPS redirection. Behind a reverse proxy, list it in `ForwardedHeaders:KnownProxies` so client addresses and the scheme are taken from `X-Forwarded-*`.
+
 ## Files (photos, signatures, invoice PDFs)
 - `IFileStorage` has `SaveAsync(stream, key)`, `OpenReadAsync(key)`, and `DeleteAsync(key)`. The MVP stores files on local disk under `/data/files/{yyyy}/{MM}/{guid}`.
 - Photos are resized on the client to a maximum of 1600px before upload. The server limits uploads to 10 MB and allows only jpeg, png, webp, and pdf.

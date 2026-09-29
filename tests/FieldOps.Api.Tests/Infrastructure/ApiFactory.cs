@@ -32,6 +32,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", _container.GetConnectionString());
         builder.UseSetting("Jwt:Key", "test-signing-key-that-is-at-least-32-bytes-long");
+        // Tests sign in constantly from one address; SecurityTests checks the real limit.
+        builder.UseSetting("RateLimiting:Auth:PermitLimit", "100000");
         builder.ConfigureTestServices(services => services.AddSingleton<IFileStorage>(Files));
     }
 
@@ -80,10 +82,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     public async Task<HttpClient> CreateClientAs(Role role) => await LoginAs(await CreateUserAsync(role));
 
     /// <summary>Returns a client signed in as an existing user.</summary>
-    public async Task<HttpClient> LoginAs(UserDto user)
+    public Task<HttpClient> LoginAs(UserDto user) => LoginAs(user.Email, Password);
+
+    public async Task<HttpClient> LoginAs(string email, string password)
     {
         var client = CreateClient();
-        var login = await client.PostAsJsonAsync("/api/auth/login", new { email = user.Email, password = Password });
+        var login = await client.PostAsJsonAsync("/api/auth/login", new { email, password });
         login.EnsureSuccessStatusCode();
         var auth = await login.Content.ReadFromJsonAsync<AuthResponse>(Json.Options);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth!.AccessToken);

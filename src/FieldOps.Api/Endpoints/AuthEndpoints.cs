@@ -7,7 +7,7 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/auth").WithTags("Auth");
+        var group = app.MapGroup("/api/auth").WithTags("Auth").RequireRateLimiting(AuthRateLimitOptions.Policy);
 
         group.MapPost("/login", async (LoginCommand cmd, LoginHandler handler, CancellationToken ct) =>
                 (await handler.Handle(cmd, ct)).ToHttp())
