@@ -31,6 +31,7 @@ public class WorkOrderTests
         Must(wo.Start(User, Now));
         if (status == WorkOrderStatus.InProgress) return wo;
         if (status == WorkOrderStatus.OnHold) { Must(wo.Hold("Waiting for parts", User, Now)); return wo; }
+        wo.ToggleTask(wo.Tasks[0].Id, User, Now).IsSuccess.ShouldBeTrue();
         Must(wo.Complete("Replaced capacitor", "Sara M.", Guid.NewGuid(), User, Now));
         if (status == WorkOrderStatus.Completed) return wo;
         Must(wo.MarkInvoiced(User, Now));
@@ -46,7 +47,7 @@ public class WorkOrderTests
         WorkOrderAction.Start => wo.Start(User, Now),
         WorkOrderAction.Hold => wo.Hold("Waiting for parts", User, Now),
         WorkOrderAction.Resume => wo.Resume(User, Now),
-        WorkOrderAction.Complete => wo.Complete("Done", "Sara M.", Guid.NewGuid(), User, Now),
+        WorkOrderAction.Complete => wo.Complete("Done", "Sara M.", Guid.NewGuid(), User, Now, "Customer declined"),
         WorkOrderAction.Cancel => wo.Cancel("No longer needed", User, Now),
         WorkOrderAction.Invoice => wo.MarkInvoiced(User, Now),
         WorkOrderAction.VoidInvoice => wo.VoidInvoice(User, Now),

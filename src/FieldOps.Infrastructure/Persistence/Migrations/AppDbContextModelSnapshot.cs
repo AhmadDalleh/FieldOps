@@ -701,6 +701,64 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                     b.ToTable("time_off", (string)null);
                 });
 
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.Attachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("kind");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("storage_key");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<Guid>("UploadedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("uploaded_by");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attachments");
+
+                    b.HasIndex("UploadedBy")
+                        .HasDatabaseName("ix_attachments_uploaded_by");
+
+                    b.HasIndex("WorkOrderId", "UploadedAt")
+                        .HasDatabaseName("ix_attachments_work_order_id_uploaded_at");
+
+                    b.ToTable("attachments", (string)null);
+                });
+
             modelBuilder.Entity("FieldOps.Domain.WorkOrders.ChecklistTemplate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -771,6 +829,50 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_checklist_template_items_template_id");
 
                     b.ToTable("checklist_template_items", (string)null);
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.TimeEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ended_at");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<Guid>("TechnicianId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("technician_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_time_entries");
+
+                    b.HasIndex("WorkOrderId")
+                        .HasDatabaseName("ix_time_entries_work_order_id");
+
+                    b.HasIndex("TechnicianId", "StartedAt")
+                        .HasDatabaseName("ix_time_entries_technician_id_started_at");
+
+                    b.ToTable("time_entries", (string)null);
                 });
 
             modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrder", b =>
@@ -907,6 +1009,9 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RequiredSkillId")
                         .HasDatabaseName("ix_work_orders_required_skill_id");
+
+                    b.HasIndex("SignatureAttachmentId")
+                        .HasDatabaseName("ix_work_orders_signature_attachment_id");
 
                     b.HasIndex("SiteId")
                         .HasDatabaseName("ix_work_orders_site_id");
@@ -1454,6 +1559,23 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_time_off_technicians_technician_id");
                 });
 
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.Attachment", b =>
+                {
+                    b.HasOne("FieldOps.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attachments_users_uploaded_by");
+
+                    b.HasOne("FieldOps.Domain.WorkOrders.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attachments_work_orders_work_order_id");
+                });
+
             modelBuilder.Entity("FieldOps.Domain.WorkOrders.ChecklistTemplateItem", b =>
                 {
                     b.HasOne("FieldOps.Domain.WorkOrders.ChecklistTemplate", null)
@@ -1462,6 +1584,23 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_checklist_template_items_checklist_templates_template_id");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.TimeEntry", b =>
+                {
+                    b.HasOne("FieldOps.Domain.Technicians.Technician", null)
+                        .WithMany()
+                        .HasForeignKey("TechnicianId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entries_technicians_technician_id");
+
+                    b.HasOne("FieldOps.Domain.WorkOrders.WorkOrder", null)
+                        .WithMany("TimeEntries")
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_time_entries_work_orders_work_order_id");
                 });
 
             modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrder", b =>
@@ -1490,6 +1629,12 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                         .HasForeignKey("RequiredSkillId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_work_orders_skills_required_skill_id");
+
+                    b.HasOne("FieldOps.Domain.WorkOrders.Attachment", null)
+                        .WithMany()
+                        .HasForeignKey("SignatureAttachmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_orders_attachments_signature_attachment_id");
 
                     b.HasOne("FieldOps.Domain.Customers.Site", null)
                         .WithMany()
@@ -1626,6 +1771,8 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                     b.Navigation("History");
 
                     b.Navigation("Tasks");
+
+                    b.Navigation("TimeEntries");
                 });
 #pragma warning restore 612, 618
         }

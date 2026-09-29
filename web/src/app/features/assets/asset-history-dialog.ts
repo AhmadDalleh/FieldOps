@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { DubaiTimePipe } from '../../shared/time/dubai-time.pipe';
+import { AuthService } from '../../core/auth.service';
 import { AssetsApi } from './assets.api';
 
 @Component({
@@ -16,7 +17,11 @@ import { AssetsApi } from './assets.api';
       @for (item of history.value() ?? []; track item.workOrderId) {
         <div class="item">
           <div>
-            <a [routerLink]="['/office/work-orders', item.workOrderId]" mat-dialog-close>{{ item.workOrderNumber }}</a>
+            @if (isOffice) {
+              <a [routerLink]="['/office/work-orders', item.workOrderId]" mat-dialog-close>{{ item.workOrderNumber }}</a>
+            } @else {
+              <strong>{{ item.workOrderNumber }}</strong>
+            }
             · {{ item.date | dubaiTime }} · {{ item.type }} · {{ item.status }}
           </div>
           <div class="muted">{{ item.technicianName || 'Unassigned' }}</div>
@@ -42,4 +47,5 @@ export class AssetHistoryDialog {
   private readonly api = inject(AssetsApi);
   protected readonly asset = inject<{ id: string; name: string }>(MAT_DIALOG_DATA);
   protected readonly history = rxResource({ stream: () => this.api.history(this.asset.id) });
+  protected readonly isOffice = inject(AuthService).user()?.role !== 'Technician';
 }

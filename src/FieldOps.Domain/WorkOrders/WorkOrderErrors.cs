@@ -31,6 +31,18 @@ public static class WorkOrderErrors
     public static readonly Error NoteEditWindowClosed = Error.Conflict("WorkOrder.NoteEditWindowClosed",
         "Notes can only be edited within 15 minutes of being added.");
 
+    public static readonly Error TasksNotDone = Error.Validation("WorkOrder.TasksNotDone",
+        "Some tasks are not done. Finish them or say why they were skipped.");
+    public static readonly Error TimeEntriesLocked = Error.Conflict("WorkOrder.TimeEntriesLocked",
+        "Time entries cannot change once the job is completed or cancelled.");
+    public static readonly Error TimeEntryNotFound = Error.NotFound("WorkOrder.TimeEntryNotFound", "The time entry was not found.");
+    public static readonly Error TimeEntryNotYours = Error.Forbidden("WorkOrder.TimeEntryNotYours",
+        "Technicians can only correct their own time entries.");
+    public static readonly Error InvalidTimeEntry = Error.Validation("WorkOrder.InvalidTimeEntry",
+        "The end must be after the start, and neither may be in the future.");
+    public static readonly Error TimeEntryOverlap = Error.Conflict("WorkOrder.TimeEntryOverlap",
+        "This overlaps another of the technician's time entries.");
+
     public static Error InvalidTransition(WorkOrderStatus from, WorkOrderAction action) =>
         Error.Conflict("WorkOrder.InvalidTransition", $"A work order that is {from} cannot {action}.");
 }
