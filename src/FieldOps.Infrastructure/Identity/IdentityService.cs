@@ -39,6 +39,12 @@ public sealed class IdentityService(UserManager<AppUser> users, AppDbContext db)
         return rows.ToDictionary(r => r.Id, r => r.ToInfo());
     }
 
+    public async Task<IReadOnlyList<Guid>> ActiveUserIdsInRolesAsync(IReadOnlyCollection<Role> roles, CancellationToken ct)
+    {
+        var names = roles.Select(r => r.ToString()).ToList();
+        return await Query().Where(u => u.IsActive && names.Contains(u.RoleName)).Select(u => u.Id).ToListAsync(ct);
+    }
+
     public async Task<PagedResult<UserInfo>> ListAsync(PageRequest page, CancellationToken ct)
     {
         var query = Query();

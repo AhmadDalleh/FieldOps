@@ -17,6 +17,7 @@ import {
   placeJob, resizedEnd, snap, workingHoursGeometry,
 } from './board-layout';
 import { BoardJob, BoardTechnician, DispatchApi } from './dispatch.api';
+import { onWorkOrderChange } from '../../core/realtime';
 
 /** Statuses a dispatcher may still move on the board (the Schedule action). */
 const MOVABLE = new Set(['New', 'Scheduled', 'Dispatched']);
@@ -225,6 +226,9 @@ export class DispatchBoard {
   protected dragging = false;
 
   protected readonly board = rxResource({ params: () => this.date(), stream: ({ params }) => this.dispatchApi.board(params) });
+  constructor() {
+    onWorkOrderChange(() => this.board.reload());
+  }
   protected readonly technicians = computed(() => this.board.value()?.technicians ?? []);
   protected readonly unassigned = computed(() => this.board.value()?.unassigned ?? []);
   protected readonly errorMessage = computed(() => problemMessage(this.board.error()));

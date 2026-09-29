@@ -26,6 +26,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     public FakeTimeProvider Clock { get; private set; } = null!;
     public TestCurrentUser CurrentUser { get; private set; } = null!;
     public InMemoryFileStorage Files { get; private set; } = null!;
+    public RecordingNotifier Notifier { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
@@ -51,6 +52,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         Clock = new FakeTimeProvider(Start);
         CurrentUser = new TestCurrentUser();
         Files = new InMemoryFileStorage();
+        Notifier = new RecordingNotifier();
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -67,6 +69,8 @@ public sealed class PostgresFixture : IAsyncLifetime
         services.AddSingleton<TimeProvider>(Clock);
         services.AddSingleton<ICurrentUser>(CurrentUser);
         services.AddSingleton<IFileStorage>(Files);
+        services.AddSingleton<INotifier>(Notifier);
+        services.AddSingleton<IEmailSender>(Notifier);
         Services = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
     }
 

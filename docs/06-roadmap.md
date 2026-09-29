@@ -131,10 +131,10 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] Extend the E2E test: complete a job, then generate and issue the invoice, then download the PDF
 
 ## Phase 9 — Notifications
-- [ ] SignalR hub, `INotifier`, and the Angular `notifications.service`
-- [ ] US-NOT-01 Bell and list
-- [ ] US-NOT-02 All events in the table (and the email template for technicians)
-- [ ] Live updates on the dispatch board and work order lists (completes DSP-02 AC5)
+- [x] SignalR hub, `INotifier`, and the Angular `notifications.service`
+- [x] US-NOT-01 Bell and list
+- [x] US-NOT-02 All events in the table (and the email template for technicians)
+- [x] Live updates on the dispatch board and work order lists (completes DSP-02 AC5)
 
 ## Phase 10 — Dashboard & Reports
 - [ ] US-DSH-01 Dashboard

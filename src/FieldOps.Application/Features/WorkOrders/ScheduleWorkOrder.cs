@@ -1,3 +1,4 @@
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Application.Abstractions;
 using FieldOps.Domain.Common;
 using FieldOps.Domain.WorkOrders;
@@ -26,7 +27,7 @@ public sealed record ScheduleResult(WorkOrderDto WorkOrder, IReadOnlyList<string
 public sealed record ScheduleWorkOrderCommand(Guid Id, ScheduleInput Input);
 
 /// <summary>Assigns and schedules, or reschedules, a job (US-DSP-01; flow 4 in docs/07-flows.md).</summary>
-public sealed class ScheduleWorkOrderHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, WorkOrderReader reader)
+public sealed class ScheduleWorkOrderHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, WorkOrderReader reader, Notifier notifier)
     : ICommandHandler<ScheduleWorkOrderCommand, Result<ScheduleResult>>
 {
     public async Task<Result<ScheduleResult>> Handle(ScheduleWorkOrderCommand cmd, CancellationToken ct)
@@ -60,13 +61,24 @@ public sealed class ScheduleWorkOrderHandler(IAppDbContext db, ICurrentUser user
             warnings.Add($"Missing skill: {skill}");
         }
 
+        var (technicianBefore, startBefore, endBefore) = (workOrder.AssignedTechnicianId, workOrder.ScheduledStart, workOrder.ScheduledEnd);
         var result = workOrder.Schedule(technician.Id, input.Start, input.End, user.UserId, clock.GetUtcNow());
         if (result.IsFailure) return result.Error;
+
+        // US-DSP-01 AC6: the technician hears about new and moved jobs; one who lost the job hears that too.
+        if (technicianBefore != technician.Id)
+        {
+            await notifier.JobAssignedAsync(workOrder, technician.Id, rescheduled: false, ct);
+            if (technicianBefore is { } previous) await notifier.JobRemovedAsync(workOrder, previous, cancelled: false, null, ct);
+        }
+        else if (startBefore != input.Start || endBefore != input.End)
+        {
+            await notifier.JobAssignedAsync(workOrder, technician.Id, rescheduled: true, ct);
+        }
 
         var saved = await db.SaveAsync(ct);
         if (saved.IsFailure) return saved.Error;
 
-        // TODO(P9): notify the technician in-app and by email (US-DSP-01 AC6).
         return new ScheduleResult(await reader.ReadAsync(workOrder.Id, ct), warnings);
     }
 }

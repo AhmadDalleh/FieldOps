@@ -4,17 +4,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { NotificationBell } from '../../features/notifications/notification-bell';
 import { onlineStatus } from '../../core/online-status';
 
 @Component({
   selector: 'app-tech-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule],
+  imports: [NotificationBell, RouterOutlet, RouterLink, RouterLinkActive, MatToolbarModule, MatIconModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="shell">
       <mat-toolbar>
         <span>FieldOps</span>
         <span class="spacer"></span>
+        <app-notification-bell />
         <button mat-icon-button aria-label="Log out" (click)="auth.logout()"><mat-icon>logout</mat-icon></button>
       </mat-toolbar>
       @if (!online()) {

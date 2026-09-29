@@ -1,6 +1,7 @@
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Features.Auth;
 using FieldOps.Application.Features.Invoices;
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Application.Features.Technicians;
 using FieldOps.Application.Features.Users;
 using FieldOps.Application.Features.WorkOrders;
@@ -36,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<TimeEntryReader>();
         services.AddScoped<InvoiceReader>();
         services.AddScoped<InvoicePdfBuilder>();
+        services.AddScoped<NotificationOutbox>();
+        services.AddScoped<Notifier>();
+        services.AddScoped<NotificationDelivery>();
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
         return services;
     }

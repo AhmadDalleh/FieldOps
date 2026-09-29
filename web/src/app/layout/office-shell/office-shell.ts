@@ -6,10 +6,11 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { NotificationBell } from '../../features/notifications/notification-bell';
 
 @Component({
   selector: 'app-office-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule],
+  imports: [NotificationBell, RouterOutlet, RouterLink, RouterLinkActive, MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <mat-sidenav-container class="shell">
@@ -62,6 +63,7 @@ import { AuthService } from '../../core/auth.service';
       <mat-sidenav-content>
         <mat-toolbar>
           <span class="spacer"></span>
+          <app-notification-bell />
           <span class="user">{{ auth.user()?.fullName }}</span>
           <a mat-button routerLink="account/password">Change password</a>
           <button mat-button (click)="auth.logout()">Log out</button>

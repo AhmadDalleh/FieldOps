@@ -1,3 +1,4 @@
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
 using FieldOps.Domain.Common;
@@ -17,12 +18,12 @@ public sealed record DispatchDayCommand(DispatchDayInput Input);
 public sealed record DispatchDayResult(IReadOnlyList<string> Dispatched);
 
 /// <summary>Returns a Scheduled or Dispatched job to New, clearing technician and times (US-DSP-04).</summary>
-public sealed class UnassignWorkOrderHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, WorkOrderReader reader)
+public sealed class UnassignWorkOrderHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, WorkOrderReader reader, Notifier notifier)
     : ICommandHandler<UnassignWorkOrderCommand, Result<WorkOrderDto>>
 {
-    // TODO(P9): notify the technician who lost the job.
     public Task<Result<WorkOrderDto>> Handle(UnassignWorkOrderCommand cmd, CancellationToken ct) =>
-        StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Unassign(user.UserId, clock.GetUtcNow()), ct);
+        StatusChange.RunAsync(db, user, reader, cmd.Id, w => w.Unassign(user.UserId, clock.GetUtcNow()), ct,
+            (w, technician) => technician is { } t ? notifier.JobRemovedAsync(w, t, cancelled: false, null, ct) : Task.CompletedTask);
 }
 
 /// <summary>Confirms a scheduled job to its technician (US-DSP-03).</summary>

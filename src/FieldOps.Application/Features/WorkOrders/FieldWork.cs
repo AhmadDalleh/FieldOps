@@ -1,3 +1,4 @@
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
 using FieldOps.Domain.Common;
@@ -59,7 +60,7 @@ public sealed class StartWorkOrderHandler(IAppDbContext db, ICurrentUser user, T
 }
 
 /// <summary>US-TAPP-08: the assigned technician completes the job with the customer's signature.</summary>
-public sealed class CompleteWorkOrderHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, WorkOrderReader reader)
+public sealed class CompleteWorkOrderHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, WorkOrderReader reader, Notifier notifier)
     : ICommandHandler<CompleteWorkOrderCommand, Result<WorkOrderDto>>
 {
     public async Task<Result<WorkOrderDto>> Handle(CompleteWorkOrderCommand cmd, CancellationToken ct)
@@ -68,11 +69,11 @@ public sealed class CompleteWorkOrderHandler(IAppDbContext db, ICurrentUser user
         var signatureIsValid = await db.Attachments.AnyAsync(a =>
             a.Id == input.SignatureAttachmentId && a.WorkOrderId == cmd.Id && a.Kind == AttachmentKind.Signature, ct);
 
-        // TODO(P9): notify Office that the job is completed (US-TAPP-08 AC3).
+        // US-TAPP-08 AC3: Office hears the job is done.
         return await FieldWork.RunAsync(db, user, reader, cmd.Id, w => signatureIsValid
             ? w.Complete(input.CompletionNotes, input.SignedByName, input.SignatureAttachmentId, user.UserId, clock.GetUtcNow(),
                 input.SkippedTasksReason)
-            : AttachmentErrors.InvalidSignature, ct);
+            : AttachmentErrors.InvalidSignature, ct, (w, _) => notifier.JobCompletedAsync(w, ct));
     }
 }
 
@@ -80,8 +81,9 @@ internal static class FieldWork
 {
     /// <summary>Runs a status change that only the job's assigned technician may make ("T*" without Office).</summary>
     public static Task<Result<WorkOrderDto>> RunAsync(
-        IAppDbContext db, ICurrentUser user, WorkOrderReader reader, Guid id, Func<WorkOrder, Result> change, CancellationToken ct) =>
+        IAppDbContext db, ICurrentUser user, WorkOrderReader reader, Guid id, Func<WorkOrder, Result> change, CancellationToken ct,
+        Func<WorkOrder, Guid?, Task>? notify = null) =>
         user.TechnicianId is null
             ? Task.FromResult<Result<WorkOrderDto>>(Errors.Forbidden)
-            : StatusChange.RunAsync(db, user, reader, id, change, ct);
+            : StatusChange.RunAsync(db, user, reader, id, change, ct, notify);
 }

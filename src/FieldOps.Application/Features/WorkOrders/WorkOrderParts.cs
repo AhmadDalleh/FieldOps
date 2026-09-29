@@ -1,6 +1,7 @@
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Common;
 using FieldOps.Application.Features.Inventory;
+using FieldOps.Application.Features.Notifications;
 using FieldOps.Domain.Common;
 using FieldOps.Domain.Inventory;
 using FieldOps.Domain.WorkOrders;
@@ -45,7 +46,7 @@ public sealed class ListWorkOrderPartsHandler(IAppDbContext db, ICurrentUser use
 /// US-TAPP-07: takes parts from the assigned technician's van. The level's <c>xmin</c> makes two people taking the last
 /// units at once end with one success and one 409, and stock never goes negative (docs/07-flows.md §5).
 /// </summary>
-public sealed class AddWorkOrderPartHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock)
+public sealed class AddWorkOrderPartHandler(IAppDbContext db, ICurrentUser user, TimeProvider clock, Notifier notifier)
     : ICommandHandler<AddWorkOrderPartCommand, Result<IReadOnlyList<WorkOrderPartDto>>>
 {
     public async Task<Result<IReadOnlyList<WorkOrderPartDto>>> Handle(AddWorkOrderPartCommand cmd, CancellationToken ct)
@@ -67,6 +68,13 @@ public sealed class AddWorkOrderPartHandler(IAppDbContext db, ICurrentUser user,
 
         db.StockMovements.Add(used.Value.Movement);
         db.WorkOrderParts.Add(used.Value.Line);
+
+        // US-NOT-02: tell admins when this use takes the part below its reorder level.
+        var elsewhere = await db.StockLevels.AsNoTracking()
+            .Where(l => l.PartId == part.Id && l.StockLocationId != van.Id).SumAsync(l => l.Quantity, ct);
+        var total = elsewhere + level.Quantity;
+        if (part.IsLow(total) && !part.IsLow(total + cmd.Input.Quantity))
+            await notifier.LowStockAsync(part.Sku, part.Name, total, part.ReorderLevel, ct);
         var saved = await Stock.SaveAsync(db, ct);
         if (saved.IsFailure) return saved.Error;
         return Result.Success(await WorkOrderPartReader.ReadAsync(db, workOrder, ct));

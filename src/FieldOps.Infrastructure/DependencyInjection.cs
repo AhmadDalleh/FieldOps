@@ -1,5 +1,7 @@
 using System.Text;
 using FieldOps.Application.Abstractions;
+using FieldOps.Application.Features.Notifications;
+using FieldOps.Infrastructure.Email;
 using FieldOps.Infrastructure.Files;
 using FieldOps.Infrastructure.Identity;
 using FieldOps.Infrastructure.Pdf;
@@ -21,11 +23,12 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<AuditInterceptor>();
+        services.AddScoped<NotificationInterceptor>();
 
         services.AddDbContext<AppDbContext>((sp, options) => options
             .UseNpgsql(configuration.GetConnectionString("Default"))
             .UseSnakeCaseNamingConvention()
-            .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
+            .AddInterceptors(sp.GetRequiredService<AuditInterceptor>(), sp.GetRequiredService<NotificationInterceptor>()));
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         services.AddIdentityCore<AppUser>(options =>
@@ -53,6 +56,9 @@ public static class DependencyInjection
         services.AddScoped<INumberSequence, NumberSequenceService>();
         services.AddSingleton<IFileStorage, LocalFileStorage>();
         services.AddSingleton<IInvoicePdfRenderer, InvoicePdfGenerator>();
+        services.AddSingleton(configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
+        services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton(configuration.GetSection(NotificationOptions.SectionName).Get<NotificationOptions>() ?? new NotificationOptions());
         services.AddScoped<DevSeeder>();
 
         return services;

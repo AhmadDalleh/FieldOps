@@ -56,6 +56,8 @@ test('dispatcher schedules a job, the technician completes it, and the office in
   // Technician on a phone.
   await logIn(page, TECHNICIAN);
   await expect(page).toHaveURL(/\/tech\/my-jobs/);
+  // The assignment is waiting under the bell.
+  await expect(page.getByRole('button', { name: /unread notifications/ })).toBeVisible();
   // Late in the evening the next full hour falls on tomorrow's list.
   await page.locator('a.card, .empty').first().waitFor();
   const card = page.locator('a.card', { hasText: title });
@@ -90,6 +92,13 @@ test('dispatcher schedules a job, the technician completes it, and the office in
   await complete.getByRole('button', { name: 'Complete job' }).click();
   await expect(page.locator('app-status-chip')).toHaveText('Completed');
   await expect(page.getByText('Signed by Sara M.')).toBeVisible();
+
+  // The office hears about it live, without reloading.
+  await expect(office.getByRole('button', { name: /unread notifications/ })).toBeVisible();
+  await expect(office.locator('app-status-chip').first()).toHaveText('Completed');
+  await office.getByRole('button', { name: /unread notifications/ }).click();
+  await expect(office.getByRole('menuitem', { name: new RegExp(`completed.*${title}|${title}.*completed`, 'i') })).toBeVisible();
+  await office.keyboard.press('Escape');
 
   // Office sees the result.
   await office.goto(jobUrl);
