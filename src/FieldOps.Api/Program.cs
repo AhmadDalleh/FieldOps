@@ -60,6 +60,7 @@ app.MapUserEndpoints();
 app.MapSettingsEndpoints();
 app.MapCustomerEndpoints();
 app.MapSiteEndpoints();
+app.MapAssetEndpoints();
 
 app.Run();
 

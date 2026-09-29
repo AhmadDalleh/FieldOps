@@ -1,3 +1,4 @@
+using FieldOps.Domain.Assets;
 using FieldOps.Domain.Customers;
 using FieldOps.Domain.Identity;
 using FieldOps.Domain.Inventory;
@@ -17,6 +18,7 @@ public interface IAppDbContext
     DbSet<Customer> Customers { get; }
     DbSet<CustomerContact> CustomerContacts { get; }
     DbSet<Site> Sites { get; }
+    DbSet<Asset> Assets { get; }
 
     DatabaseFacade Database { get; }
 
