@@ -5,6 +5,7 @@ using FieldOps.Application.Tests.Infrastructure;
 using FieldOps.Domain.Assets;
 using FieldOps.Domain.Customers;
 using FieldOps.Domain.Identity;
+using FieldOps.Domain.WorkOrders;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 
@@ -183,6 +184,42 @@ public class AssetTests(PostgresFixture fixture) : TestBase(fixture)
         history.Error.Type.ShouldBe(Domain.Common.ErrorType.Forbidden);
     }
 
-    [Fact(Skip = "Enabled in Phase 4 once work orders exist (US-AST-02 AC1 and AC2).")]
-    public Task History_lists_the_assets_work_orders_newest_first_and_technicians_see_their_own() => Task.CompletedTask;
+    [Fact]
+    public async Task History_lists_the_assets_work_orders_newest_first_and_technicians_see_their_own()
+    {
+        var (customerId, siteId) = await GivenSite();
+        var asset = (await Register(siteId, Input())).Value;
+        var (techUser, tech) = await GivenTechnician();
+        var first = await GivenWorkOrder(customerId, siteId, asset.Id, title: "First visit");
+        await Complete(first.Id, tech, "Cleaned coil");
+        Fixture.Clock.Advance(TimeSpan.FromDays(1));
+        var second = await GivenWorkOrder(customerId, siteId, asset.Id, WorkOrderType.Maintenance, title: "Second visit");
+        await GivenWorkOrder(customerId, siteId, title: "Not on this asset");
+
+        var history = (await Resolve<GetAssetHistoryHandler>().Handle(new GetAssetHistoryQuery(asset.Id), default)).Value;
+
+        history.Select(h => h.WorkOrderId).ShouldBe([second.Id, first.Id]);
+        history[0].Type.ShouldBe(WorkOrderType.Maintenance);
+        history[0].Status.ShouldBe(WorkOrderStatus.New);
+        history[1].WorkOrderNumber.ShouldBe(first.Number);
+        history[1].TechnicianName.ShouldBe("Technician User");
+        history[1].CompletionNotes.ShouldBe("Cleaned coil");
+        history[1].Status.ShouldBe(WorkOrderStatus.Completed);
+
+        Fixture.CurrentUser.SignInAs(techUser, Role.Technician, tech);
+        (await Resolve<GetAssetHistoryHandler>().Handle(new GetAssetHistoryQuery(asset.Id), default)).Value.Count.ShouldBe(2);
+        (await Resolve<GetAssetHandler>().Handle(new GetAssetQuery(asset.Id), default)).IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Technician_cannot_read_an_asset_that_is_not_on_their_jobs()
+    {
+        var (_, siteId) = await GivenSite();
+        var asset = (await Register(siteId, Input())).Value;
+        var (techUser, tech) = await GivenTechnician();
+        Fixture.CurrentUser.SignInAs(techUser, Role.Technician, tech);
+
+        (await Resolve<GetAssetHandler>().Handle(new GetAssetQuery(asset.Id), default)).Error.Type
+            .ShouldBe(Domain.Common.ErrorType.Forbidden);
+    }
 }

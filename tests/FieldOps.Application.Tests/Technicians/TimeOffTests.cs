@@ -13,13 +13,6 @@ public class TimeOffTests(PostgresFixture fixture) : TestBase(fixture)
     // Dubai is UTC+4, so 2026-10-02 08:00 Dubai is 04:00 UTC.
     private static readonly DateTimeOffset Morning = new(2026, 10, 2, 4, 0, 0, TimeSpan.Zero);
 
-    private async Task<(Guid UserId, Guid TechnicianId)> GivenTechnician()
-    {
-        var user = await GivenUser(Role.Technician);
-        var technicianId = await NewDb().Technicians.Where(t => t.UserId == user.Id).Select(t => t.Id).SingleAsync();
-        return (user.Id, technicianId);
-    }
-
     private async Task<(Guid UserId, Guid TechnicianId)> SignedInTechnician()
     {
         var technician = await GivenTechnician();

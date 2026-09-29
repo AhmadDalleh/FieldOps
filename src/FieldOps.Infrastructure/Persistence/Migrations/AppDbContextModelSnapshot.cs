@@ -701,6 +701,379 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                     b.ToTable("time_off", (string)null);
                 });
 
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.ChecklistTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("WorkOrderType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("work_order_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_checklist_templates");
+
+                    b.ToTable("checklist_templates", (string)null);
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.ChecklistTemplateItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("template_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_checklist_template_items");
+
+                    b.HasIndex("TemplateId")
+                        .HasDatabaseName("ix_checklist_template_items_template_id");
+
+                    b.ToTable("checklist_template_items", (string)null);
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AssetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("asset_id");
+
+                    b.Property<Guid?>("AssignedTechnicianId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_technician_id");
+
+                    b.Property<string>("CancelReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cancel_reason");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("CompletionNotes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("completion_notes");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset?>("DueBy")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("due_by");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("number");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("priority");
+
+                    b.Property<Guid?>("RequiredSkillId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("required_skill_id");
+
+                    b.Property<DateTimeOffset?>("ScheduledEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_end");
+
+                    b.Property<DateTimeOffset?>("ScheduledStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_start");
+
+                    b.Property<Guid?>("SignatureAttachmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("signature_attachment_id");
+
+                    b.Property<string>("SignedByName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("signed_by_name");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("site_id");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_orders");
+
+                    b.HasIndex("AssetId")
+                        .HasDatabaseName("ix_work_orders_asset_id");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_work_orders_number");
+
+                    b.HasIndex("RequiredSkillId")
+                        .HasDatabaseName("ix_work_orders_required_skill_id");
+
+                    b.HasIndex("SiteId")
+                        .HasDatabaseName("ix_work_orders_site_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_work_orders_status");
+
+                    b.HasIndex("AssignedTechnicianId", "ScheduledStart")
+                        .HasDatabaseName("ix_work_orders_assigned_technician_id_scheduled_start");
+
+                    b.HasIndex("CustomerId", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_work_orders_customer_id_created_at");
+
+                    b.ToTable("work_orders", (string)null);
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrderNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsInternal")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_internal");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_order_notes");
+
+                    b.HasIndex("AuthorId")
+                        .HasDatabaseName("ix_work_order_notes_author_id");
+
+                    b.HasIndex("WorkOrderId", "CreatedAt")
+                        .HasDatabaseName("ix_work_order_notes_work_order_id_created_at");
+
+                    b.ToTable("work_order_notes", (string)null);
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrderStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("changed_at");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("changed_by");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("from_status");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("latitude");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("longitude");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("note");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("to_status");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_order_status_history");
+
+                    b.HasIndex("ChangedBy")
+                        .HasDatabaseName("ix_work_order_status_history_changed_by");
+
+                    b.HasIndex("WorkOrderId", "ChangedAt")
+                        .HasDatabaseName("ix_work_order_status_history_work_order_id_changed_at");
+
+                    b.ToTable("work_order_status_history", (string)null);
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrderTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset?>("DoneAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("done_at");
+
+                    b.Property<Guid?>("DoneBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("done_by");
+
+                    b.Property<bool>("IsDone")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_done");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<Guid>("WorkOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_work_order_tasks");
+
+                    b.HasIndex("DoneBy")
+                        .HasDatabaseName("ix_work_order_tasks_done_by");
+
+                    b.HasIndex("WorkOrderId", "SortOrder")
+                        .HasDatabaseName("ix_work_order_tasks_work_order_id_sort_order");
+
+                    b.ToTable("work_order_tasks", (string)null);
+                });
+
             modelBuilder.Entity("FieldOps.Infrastructure.Identity.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1081,6 +1454,101 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_time_off_technicians_technician_id");
                 });
 
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.ChecklistTemplateItem", b =>
+                {
+                    b.HasOne("FieldOps.Domain.WorkOrders.ChecklistTemplate", null)
+                        .WithMany("Items")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_checklist_template_items_checklist_templates_template_id");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrder", b =>
+                {
+                    b.HasOne("FieldOps.Domain.Assets.Asset", null)
+                        .WithMany()
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_orders_assets_asset_id");
+
+                    b.HasOne("FieldOps.Domain.Technicians.Technician", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedTechnicianId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_orders_technicians_assigned_technician_id");
+
+                    b.HasOne("FieldOps.Domain.Customers.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_customers_customer_id");
+
+                    b.HasOne("FieldOps.Domain.Technicians.Skill", null)
+                        .WithMany()
+                        .HasForeignKey("RequiredSkillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_orders_skills_required_skill_id");
+
+                    b.HasOne("FieldOps.Domain.Customers.Site", null)
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_orders_sites_site_id");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrderNote", b =>
+                {
+                    b.HasOne("FieldOps.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_notes_users_author_id");
+
+                    b.HasOne("FieldOps.Domain.WorkOrders.WorkOrder", null)
+                        .WithMany()
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_notes_work_orders_work_order_id");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrderStatusHistory", b =>
+                {
+                    b.HasOne("FieldOps.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("ChangedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_status_history_users_changed_by");
+
+                    b.HasOne("FieldOps.Domain.WorkOrders.WorkOrder", null)
+                        .WithMany("History")
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_status_history_work_orders_work_order_id");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrderTask", b =>
+                {
+                    b.HasOne("FieldOps.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("DoneBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_work_order_tasks_users_done_by");
+
+                    b.HasOne("FieldOps.Domain.WorkOrders.WorkOrder", null)
+                        .WithMany("Tasks")
+                        .HasForeignKey("WorkOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_work_order_tasks_work_orders_work_order_id");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -1146,6 +1614,18 @@ namespace FieldOps.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("FieldOps.Domain.Technicians.Technician", b =>
                 {
                     b.Navigation("Skills");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.ChecklistTemplate", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("FieldOps.Domain.WorkOrders.WorkOrder", b =>
+                {
+                    b.Navigation("History");
+
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

@@ -6,6 +6,7 @@ using FieldOps.Domain.Identity;
 using FieldOps.Domain.Inventory;
 using FieldOps.Domain.Settings;
 using FieldOps.Domain.Technicians;
+using FieldOps.Domain.WorkOrders;
 using FieldOps.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -26,6 +27,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<TimeOff> TimeOffs => Set<TimeOff>();
+    public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public DbSet<WorkOrderTask> WorkOrderTasks => Set<WorkOrderTask>();
+    public DbSet<WorkOrderNote> WorkOrderNotes => Set<WorkOrderNote>();
+    public DbSet<WorkOrderStatusHistory> WorkOrderStatusHistory => Set<WorkOrderStatusHistory>();
+    public DbSet<ChecklistTemplate> ChecklistTemplates => Set<ChecklistTemplate>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)

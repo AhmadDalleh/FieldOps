@@ -78,17 +78,17 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] US-TEC-04 Technician list with availability
 
 ## Phase 4 — Work Orders core
-- [ ] `WorkOrder` aggregate and state machine with **full transition-table unit tests** (see 07-flows)
-- [ ] US-WO-01 Create (number sequence and checklist template copy)
-- [ ] US-WO-02 List/filter
-- [ ] US-WO-03 Detail page
-- [ ] US-WO-04 Edit (with concurrency)
-- [ ] US-WO-05 Tasks/checklist
-- [ ] US-WO-06 Notes
-- [ ] US-WO-07 Status workflow endpoints (the Office-side actions)
-- [ ] US-WO-08 Cancel
-- [ ] US-WO-09 Status timeline
-- [ ] Complete the deferred rules: CUS-04 AC1, SITE-02, and AST-02
+- [x] `WorkOrder` aggregate and state machine with **full transition-table unit tests** (see 07-flows)
+- [x] US-WO-01 Create (number sequence and checklist template copy)
+- [x] US-WO-02 List/filter
+- [x] US-WO-03 Detail page
+- [x] US-WO-04 Edit (with concurrency)
+- [x] US-WO-05 Tasks/checklist
+- [x] US-WO-06 Notes
+- [x] US-WO-07 Status workflow endpoints (the Office-side actions)
+- [x] US-WO-08 Cancel
+- [x] US-WO-09 Status timeline
+- [x] Complete the deferred rules: CUS-04 AC1, SITE-02, and AST-02
 
 ## Phase 5 — Scheduling & Dispatch
 - [ ] US-DSP-01 Assign & schedule (overlap, time-off, and skill checks)

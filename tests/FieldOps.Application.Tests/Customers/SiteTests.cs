@@ -1,5 +1,6 @@
 using FieldOps.Application.Features.Customers;
 using FieldOps.Application.Features.Sites;
+using FieldOps.Application.Features.WorkOrders;
 using FieldOps.Application.Tests.Infrastructure;
 using FieldOps.Domain.Customers;
 using Shouldly;
@@ -102,6 +103,16 @@ public class SiteTests(PostgresFixture fixture) : TestBase(fixture)
         result.Error.ShouldBe(CustomerErrors.NotFound);
     }
 
-    [Fact(Skip = "Enabled in Phase 4 once work orders exist (US-SITE-02).")]
-    public Task Site_with_open_work_orders_cannot_be_deactivated() => Task.CompletedTask;
+    [Fact]
+    public async Task Site_with_open_work_orders_cannot_be_deactivated()
+    {
+        var (customerId, siteId) = await GivenCustomerAndSite();
+        var open = await GivenWorkOrder(customerId, siteId);
+        var deactivate = () => Resolve<DeactivateSiteHandler>().Handle(new DeactivateSiteCommand(siteId), default);
+
+        (await deactivate()).Error.ShouldBe(CustomerErrors.SiteHasOpenWorkOrders);
+
+        await Resolve<CancelWorkOrderHandler>().Handle(new CancelWorkOrderCommand(open.Id, new CancelInput("Duplicate")), default);
+        (await deactivate()).IsSuccess.ShouldBeTrue();
+    }
 }

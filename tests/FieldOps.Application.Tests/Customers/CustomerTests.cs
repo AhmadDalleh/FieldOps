@@ -140,6 +140,17 @@ public class CustomerTests(PostgresFixture fixture) : TestBase(fixture)
         (await Resolve<DeactivateCustomerHandler>().Handle(new DeactivateCustomerCommand(id), default)).Error.ShouldBe(CustomerErrors.NotFound);
     }
 
-    [Fact(Skip = "Enabled in Phase 4 once work orders exist (US-CUS-04 AC1).")]
-    public Task Customer_with_open_work_orders_cannot_be_deactivated() => Task.CompletedTask;
+    [Fact]
+    public async Task Customer_with_open_work_orders_cannot_be_deactivated()
+    {
+        var (customerId, siteId) = await GivenCustomerAndSite();
+        var open = await GivenWorkOrder(customerId, siteId);
+        var (_, tech) = await GivenTechnician();
+        var deactivate = () => Resolve<DeactivateCustomerHandler>().Handle(new DeactivateCustomerCommand(customerId), default);
+
+        (await deactivate()).Error.ShouldBe(CustomerErrors.HasOpenWorkOrders);
+
+        await Complete(open.Id, tech);
+        (await deactivate()).IsSuccess.ShouldBeTrue();
+    }
 }
