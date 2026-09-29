@@ -22,9 +22,18 @@ import { AuthService } from '../../core/auth.service';
           <a mat-list-item routerLink="customers" routerLinkActive="active">
             <mat-icon matListItemIcon>business</mat-icon><span matListItemTitle>Customers</span>
           </a>
+          <a mat-list-item routerLink="technicians" routerLinkActive="active">
+            <mat-icon matListItemIcon>engineering</mat-icon><span matListItemTitle>Technicians</span>
+          </a>
+          <a mat-list-item routerLink="time-off" routerLinkActive="active">
+            <mat-icon matListItemIcon>event_busy</mat-icon><span matListItemTitle>Time off</span>
+          </a>
           @if (isAdmin()) {
             <a mat-list-item routerLink="settings/users" routerLinkActive="active">
               <mat-icon matListItemIcon>group</mat-icon><span matListItemTitle>Users</span>
+            </a>
+            <a mat-list-item routerLink="settings/skills" routerLinkActive="active">
+              <mat-icon matListItemIcon>construction</mat-icon><span matListItemTitle>Skills</span>
             </a>
             <a mat-list-item routerLink="settings/company" routerLinkActive="active">
               <mat-icon matListItemIcon>settings</mat-icon><span matListItemTitle>Company settings</span>

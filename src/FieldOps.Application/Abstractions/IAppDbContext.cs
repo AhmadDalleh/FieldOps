@@ -19,6 +19,8 @@ public interface IAppDbContext
     DbSet<CustomerContact> CustomerContacts { get; }
     DbSet<Site> Sites { get; }
     DbSet<Asset> Assets { get; }
+    DbSet<Skill> Skills { get; }
+    DbSet<TimeOff> TimeOffs { get; }
 
     DatabaseFacade Database { get; }
 

@@ -75,9 +75,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     }
 
     /// <summary>Returns a client carrying a real JWT obtained through the login endpoint.</summary>
-    public async Task<HttpClient> CreateClientAs(Role role)
+    public async Task<HttpClient> CreateClientAs(Role role) => await LoginAs(await CreateUserAsync(role));
+
+    /// <summary>Returns a client signed in as an existing user.</summary>
+    public async Task<HttpClient> LoginAs(UserDto user)
     {
-        var user = await CreateUserAsync(role);
         var client = CreateClient();
         var login = await client.PostAsJsonAsync("/api/auth/login", new { email = user.Email, password = Password });
         login.EnsureSuccessStatusCode();

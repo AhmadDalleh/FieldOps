@@ -1,5 +1,6 @@
 using FieldOps.Application.Abstractions;
 using FieldOps.Application.Features.Auth;
+using FieldOps.Application.Features.Technicians;
 using FieldOps.Application.Features.Users;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,8 @@ public static class DependencyInjection
 
         services.AddScoped<TokenIssuer>();
         services.AddScoped<TechnicianProvisioner>();
+        services.AddScoped<TechnicianReader>();
+        services.AddScoped<TimeOffReader>();
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
         return services;
     }

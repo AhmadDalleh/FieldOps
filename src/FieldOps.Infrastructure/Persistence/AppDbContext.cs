@@ -24,6 +24,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
     public DbSet<Site> Sites => Set<Site>();
     public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<Skill> Skills => Set<Skill>();
+    public DbSet<TimeOff> TimeOffs => Set<TimeOff>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)

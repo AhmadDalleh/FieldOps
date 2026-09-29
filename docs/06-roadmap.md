@@ -72,10 +72,10 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] US-AST-03 Warranty badge
 
 ## Phase 3 — Technicians
-- [ ] US-TEC-01 Technician profile
-- [ ] US-TEC-02 Skills
-- [ ] US-TEC-03 Time off request/approve
-- [ ] US-TEC-04 Technician list with availability
+- [x] US-TEC-01 Technician profile
+- [x] US-TEC-02 Skills
+- [x] US-TEC-03 Time off request/approve
+- [x] US-TEC-04 Technician list with availability
 
 ## Phase 4 — Work Orders core
 - [ ] `WorkOrder` aggregate and state machine with **full transition-table unit tests** (see 07-flows)
