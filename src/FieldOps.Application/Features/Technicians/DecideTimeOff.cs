@@ -1,4 +1,5 @@
 using FieldOps.Application.Abstractions;
+using FieldOps.Application.Features.WorkOrders;
 using FieldOps.Domain.Common;
 using FieldOps.Domain.Technicians;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +21,12 @@ public sealed class DecideTimeOffHandler(IAppDbContext db, TimeOffReader reader)
 
         await db.SaveChangesAsync(ct);
 
-        // TODO(P5): list the technician's scheduled jobs that the approved time off overlaps (US-TEC-03 AC3).
-        IReadOnlyList<ConflictingJob> conflicts = [];
+        // Approved time off does not move existing jobs; it lists them so Office can reschedule (US-TEC-03 AC3).
+        IReadOnlyList<ConflictingJob> conflicts = cmd.Approve
+            ? (await Scheduling.OverlappingJobsAsync(db, timeOff.TechnicianId, timeOff.StartsAt, timeOff.EndsAt, null, ct))
+                .Select(j => new ConflictingJob(j.WorkOrderId, j.Number, j.ScheduledStart, j.ScheduledEnd))
+                .ToList()
+            : [];
 
         var dto = (await reader.ReadAsync(db.TimeOffs.Where(t => t.Id == cmd.Id), ct))[0];
         return new TimeOffDecision(dto, conflicts);

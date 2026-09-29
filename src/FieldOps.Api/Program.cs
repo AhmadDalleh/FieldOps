@@ -63,6 +63,7 @@ app.MapSiteEndpoints();
 app.MapAssetEndpoints();
 app.MapTechnicianEndpoints();
 app.MapWorkOrderEndpoints();
+app.MapDispatchEndpoints();
 
 app.Run();
 

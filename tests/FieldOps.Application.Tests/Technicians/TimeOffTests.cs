@@ -127,8 +127,25 @@ public class TimeOffTests(PostgresFixture fixture) : TestBase(fixture)
         (await Decide(Guid.NewGuid(), approve: true)).Error.ShouldBe(TechnicianErrors.TimeOffNotFound);
     }
 
-    [Fact(Skip = "TODO(P5): needs scheduled work orders (US-TEC-03 AC3)")]
-    public void Approval_lists_scheduled_jobs_the_time_off_overlaps() { }
+    [Fact]
+    public async Task Approval_lists_scheduled_jobs_the_time_off_overlaps()
+    {
+        var (techUser, tech) = await GivenTechnician();
+        var (c, s) = await GivenCustomerAndSite();
+        var inside = await GivenWorkOrder(c, s, title: "inside");
+        var outside = await GivenWorkOrder(c, s, title: "outside");
+        await Advance(inside.Id, (w, u, now) => w.Schedule(tech, Morning.AddHours(1), Morning.AddHours(2), u, now));
+        await Advance(outside.Id, (w, u, now) => w.Schedule(tech, Morning.AddHours(9), Morning.AddHours(10), u, now));
+        Fixture.CurrentUser.SignInAs(techUser, Role.Technician, tech);
+        var request = (await Request(new TimeOffInput(Morning, Morning.AddHours(4), "Dentist"))).Value;
+        await SignedInAs(Role.Dispatcher);
+
+        var decision = (await Decide(request.Id, approve: true)).Value;
+
+        var conflict = decision.ConflictingJobs.ShouldHaveSingleItem();
+        conflict.Number.ShouldBe(inside.Number);
+        conflict.ScheduledStart.ShouldBe(Morning.AddHours(1));
+    }
 
     [Fact]
     public async Task Technician_only_sees_their_own_requests()

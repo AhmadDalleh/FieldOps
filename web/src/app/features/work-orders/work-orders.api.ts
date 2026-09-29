@@ -78,6 +78,7 @@ export interface WorkOrder {
     underWarranty: boolean;
   } | null;
   technician: { id: string; name: string; color: string } | null;
+  requiredSkill: { id: string; name: string } | null;
   startedAt: string | null;
   completedAt: string | null;
   completionNotes: string | null;
@@ -125,6 +126,7 @@ export interface CreateWorkOrderInput {
   type: WorkOrderType;
   priority: WorkOrderPriority;
   dueBy: string | null;
+  requiredSkillId: string | null;
 }
 
 export interface UpdateWorkOrderInput {
@@ -134,7 +136,27 @@ export interface UpdateWorkOrderInput {
   priority: WorkOrderPriority;
   dueBy: string | null;
   assetId: string | null;
+  requiredSkillId: string | null;
   version: number;
+}
+
+export interface ScheduleInput {
+  technicianId: string;
+  start: string;
+  end: string;
+  allowOverlap?: boolean;
+}
+
+export interface ScheduledJob {
+  workOrderId: string;
+  number: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+}
+
+export interface ScheduleResult {
+  workOrder: WorkOrder;
+  warnings: string[];
 }
 
 export interface HistoryItem {
@@ -180,6 +202,22 @@ export class WorkOrdersApi {
 
   update(id: string, input: UpdateWorkOrderInput): Observable<WorkOrder> {
     return this.http.put<WorkOrder>(`/api/work-orders/${id}`, input);
+  }
+
+  schedule(id: string, input: ScheduleInput): Observable<ScheduleResult> {
+    return this.http.post<ScheduleResult>(`/api/work-orders/${id}/schedule`, input);
+  }
+
+  unassign(id: string): Observable<WorkOrder> {
+    return this.http.post<WorkOrder>(`/api/work-orders/${id}/unassign`, null);
+  }
+
+  dispatch(id: string): Observable<WorkOrder> {
+    return this.http.post<WorkOrder>(`/api/work-orders/${id}/dispatch`, null);
+  }
+
+  dispatchDay(technicianId: string, date: string): Observable<{ dispatched: string[] }> {
+    return this.http.post<{ dispatched: string[] }>('/api/work-orders/dispatch-day', { technicianId, date });
   }
 
   history(id: string): Observable<HistoryItem[]> {

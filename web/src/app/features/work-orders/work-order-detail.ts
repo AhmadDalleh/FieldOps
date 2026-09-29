@@ -14,10 +14,12 @@ import { RouterLink } from '@angular/router';
 import { Observable, filter } from 'rxjs';
 import { problemMessage } from '../../core/problem';
 import { DubaiTimePipe } from '../../shared/time/dubai-time.pipe';
+import { ConfirmData, ConfirmDialog } from '../../shared/ui/confirm-dialog/confirm-dialog';
 import { MapPicker } from '../../shared/ui/map-picker/map-picker';
 import { WarrantyBadge } from '../../shared/ui/warranty-badge/warranty-badge';
 import { AssetHistoryDialog } from '../assets/asset-history-dialog';
 import { ReasonDialog, ReasonDialogData } from './reason-dialog';
+import { ScheduleDialog } from './schedule-dialog';
 import { PriorityChip, StatusChip, move, statusLabel } from './work-order-labels';
 import { WorkOrderDialog, WorkOrderDialogData } from './work-order-dialog';
 import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api';
@@ -47,6 +49,15 @@ import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api
         <div class="actions">
           @if (w.isEditable) {
             <button mat-stroked-button (click)="edit(w)">Edit</button>
+          }
+          @if (can('Schedule')) {
+            <button mat-stroked-button (click)="schedule(w)">{{ w.technician ? 'Reschedule' : 'Schedule' }}</button>
+          }
+          @if (can('Dispatch')) {
+            <button mat-flat-button (click)="run(api.dispatch(w.id), 'Dispatched to ' + w.technician?.name + '.')">Dispatch</button>
+          }
+          @if (can('Unassign')) {
+            <button mat-stroked-button (click)="unassign(w)">Unassign</button>
           }
           @if (can('Hold')) {
             <button mat-stroked-button (click)="hold(w)">Put on hold</button>
@@ -93,6 +104,8 @@ import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api
                   Unassigned
                 }
               </dd>
+              <dt>Required skill</dt>
+              <dd>{{ w.requiredSkill?.name ?? '—' }}</dd>
               <dt>Scheduled</dt>
               <dd>{{ w.scheduledStart ? (w.scheduledStart | dubaiTime) + ' to ' + (w.scheduledEnd | dubaiTime) : '—' }}</dd>
               <dt>Due by</dt>
@@ -321,6 +334,26 @@ export class WorkOrderDetail {
       .open<WorkOrderDialog, WorkOrderDialogData, WorkOrder>(WorkOrderDialog, { data: { workOrder: w } })
       .afterClosed()
       .subscribe((saved) => (saved ? this.workOrder.set(saved) : this.refresh()));
+  }
+
+  protected schedule(w: WorkOrder): void {
+    this.dialog
+      .open<ScheduleDialog, WorkOrder, WorkOrder>(ScheduleDialog, { data: w })
+      .afterClosed()
+      .subscribe((saved) => {
+        if (!saved) return;
+        this.workOrder.set(saved);
+        this.history.reload();
+      });
+  }
+
+  protected unassign(w: WorkOrder): void {
+    this.dialog
+      .open<ConfirmDialog, ConfirmData, boolean>(ConfirmDialog, {
+        data: { title: `Unassign ${w.number}`, message: 'The job goes back to New without a technician or times.', confirmLabel: 'Unassign' },
+      })
+      .afterClosed()
+      .subscribe((yes) => yes && this.run(this.api.unassign(w.id), 'Job unassigned.'));
   }
 
   protected hold(w: WorkOrder): void {

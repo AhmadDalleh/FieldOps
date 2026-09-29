@@ -112,6 +112,20 @@ public class TechnicianAvailabilityTests(PostgresFixture fixture) : TestBase(fix
         all.Single(r => !r.Technician.IsActive).IsAvailable.ShouldBeFalse();
     }
 
-    [Fact(Skip = "TODO(P5): needs scheduled work orders (US-TEC-04 job count)")]
-    public void Job_count_is_the_number_of_jobs_scheduled_that_day() { }
+    [Fact]
+    public async Task Job_count_is_the_number_of_jobs_scheduled_that_day()
+    {
+        var (_, technicianId) = await GivenTechnician();
+        var (c, s) = await GivenCustomerAndSite();
+        var today = new DateTimeOffset(2026, 10, 1, 8, 0, 0, TimeSpan.Zero);
+        foreach (var (start, cancel) in new[] { (today, false), (today.AddHours(3), false), (today.AddHours(5), true), (today.AddDays(1), false) })
+        {
+            var wo = await GivenWorkOrder(c, s);
+            await Advance(wo.Id, (w, u, now) => w.Schedule(technicianId, start, start.AddHours(1), u, now));
+            if (cancel) await Advance(wo.Id, (w, u, now) => w.Cancel("Dup", u, now));
+        }
+
+        (await List(Today)).Single().JobCount.ShouldBe(2);
+        (await List(Today.AddDays(1))).Single().JobCount.ShouldBe(1);
+    }
 }

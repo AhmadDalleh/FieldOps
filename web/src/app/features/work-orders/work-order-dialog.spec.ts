@@ -22,6 +22,7 @@ const existing: WorkOrder = {
   site: { id: 's-1', name: 'HQ', addressLine1: 'Road', addressLine2: null, city: 'Dubai', latitude: null, longitude: null, accessNotes: null },
   asset: null,
   technician: null,
+  requiredSkill: null,
   startedAt: null,
   completedAt: null,
   completionNotes: null,
@@ -59,6 +60,7 @@ describe('WorkOrderDialog', () => {
     fixture.detectChanges();
     TestBed.tick();
     backend.expectOne('/api/customers/c-1/assets').flush([]);
+    backend.expectOne('/api/skills').flush([{ id: 'sk-1', name: 'HVAC' }]);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
 
@@ -79,6 +81,7 @@ describe('WorkOrderDialog', () => {
       priority: 'High',
       dueBy: '2026-10-01T04:00:00.000Z',
       assetId: null,
+      requiredSkillId: null,
       version: 812,
     });
     req.flush({ ...existing, title: 'Replace compressor' });
@@ -90,6 +93,7 @@ describe('WorkOrderDialog', () => {
     fixture.detectChanges();
     TestBed.tick();
     backend.expectOne('/api/customers/c-1/assets').flush([]);
+    backend.expectOne('/api/skills').flush([{ id: 'sk-1', name: 'HVAC' }]);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
     el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();

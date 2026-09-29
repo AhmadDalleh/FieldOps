@@ -261,6 +261,7 @@ public sealed class WorkOrder : AuditableEntity
         Priority = details.Priority;
         DueBy = details.DueBy;
         AssetId = details.AssetId;
+        RequiredSkillId = details.RequiredSkillId;
     }
 }
 
@@ -270,4 +271,5 @@ public sealed record WorkOrderDetails(
     WorkOrderType Type,
     WorkOrderPriority Priority,
     DateTimeOffset? DueBy,
-    Guid? AssetId);
+    Guid? AssetId,
+    Guid? RequiredSkillId = null);

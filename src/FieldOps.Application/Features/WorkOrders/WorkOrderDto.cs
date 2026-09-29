@@ -14,6 +14,8 @@ public sealed record WorkOrderAsset(
 
 public sealed record WorkOrderTechnician(Guid Id, string Name, string Color);
 
+public sealed record SkillRef(Guid Id, string Name);
+
 public sealed record WorkOrderTaskDto(Guid Id, int SortOrder, string Description, bool IsDone, DateTimeOffset? DoneAt, string? DoneByName);
 
 public sealed record WorkOrderDto(
@@ -32,6 +34,7 @@ public sealed record WorkOrderDto(
     WorkOrderSite Site,
     WorkOrderAsset? Asset,
     WorkOrderTechnician? Technician,
+    SkillRef? RequiredSkill,
     DateTimeOffset? StartedAt,
     DateTimeOffset? CompletedAt,
     string? CompletionNotes,
