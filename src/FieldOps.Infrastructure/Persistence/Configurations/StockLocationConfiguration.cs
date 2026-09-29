@@ -13,5 +13,15 @@ internal sealed class StockLocationConfiguration : IEntityTypeConfiguration<Stoc
         builder.Property(l => l.Name).HasMaxLength(200).IsRequired();
         builder.HasIndex(l => l.TechnicianId).IsUnique();
         builder.HasOne<Technician>().WithOne().HasForeignKey<StockLocation>(l => l.TechnicianId).OnDelete(DeleteBehavior.Restrict);
+
+        var warehouse = StockLocation.CreateMainWarehouse();
+        builder.HasData(new
+        {
+            warehouse.Id,
+            warehouse.Name,
+            warehouse.Type,
+            warehouse.IsActive,
+            CreatedAt = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero),
+        });
     }
 }

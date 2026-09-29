@@ -110,14 +110,14 @@ Goal: build the solution skeleton so that a user can log in and see a role-based
 - [x] Playwright E2E: dispatcher creates and schedules a job, then the technician goes en-route, starts, and completes it
 
 ## Phase 7 — Parts & Inventory
-- [ ] US-INV-01 Parts catalog
-- [ ] US-INV-02 Stock by location
-- [ ] US-INV-03 Receive
-- [ ] US-INV-04 Transfer
-- [ ] US-INV-05 Adjust
-- [ ] US-INV-06 Movement history
-- [ ] US-TAPP-07 Record parts used on a job (plus the Return-on-cancel rule in WO-08)
-- [ ] Concurrency test: two technicians consuming the last units at the same time, so that one succeeds and one gets 409
+- [x] US-INV-01 Parts catalog
+- [x] US-INV-02 Stock by location
+- [x] US-INV-03 Receive
+- [x] US-INV-04 Transfer
+- [x] US-INV-05 Adjust
+- [x] US-INV-06 Movement history
+- [x] US-TAPP-07 Record parts used on a job (plus the Return-on-cancel rule in WO-08)
+- [x] Concurrency test: two technicians consuming the last units at the same time, so that one succeeds and one gets 409
 
 ## Phase 8 — Invoicing
 - [ ] `InvoiceCalculator` domain tests (rounding, the 0.25h labor rounding, VAT)

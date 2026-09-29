@@ -34,6 +34,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ChecklistTemplate> ChecklistTemplates => Set<ChecklistTemplate>();
     public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<Part> Parts => Set<Part>();
+    public DbSet<StockLevel> StockLevels => Set<StockLevel>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<WorkOrderPart> WorkOrderParts => Set<WorkOrderPart>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)

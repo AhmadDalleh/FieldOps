@@ -1,3 +1,4 @@
+using FieldOps.Domain.Inventory;
 using FieldOps.Application.Features.Users;
 using FieldOps.Application.Tests.Infrastructure;
 using FieldOps.Domain.Identity;
@@ -42,7 +43,7 @@ public class UserStatusTests(PostgresFixture fixture) : TestBase(fixture)
 
         var fetched = await Resolve<GetUserHandler>().Handle(new GetUserQuery(user.Id), default);
         fetched.Value.IsActive.ShouldBeFalse();
-        (await NewDb().StockLocations.CountAsync()).ShouldBe(1);
+        (await NewDb().StockLocations.CountAsync(l => l.Type == StockLocationType.Van)).ShouldBe(1);
     }
 
     [Fact]

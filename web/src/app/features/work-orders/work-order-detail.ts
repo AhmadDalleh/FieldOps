@@ -18,6 +18,7 @@ import { ConfirmData, ConfirmDialog } from '../../shared/ui/confirm-dialog/confi
 import { MapPicker } from '../../shared/ui/map-picker/map-picker';
 import { WarrantyBadge } from '../../shared/ui/warranty-badge/warranty-badge';
 import { AssetHistoryDialog } from '../assets/asset-history-dialog';
+import { WorkOrderPartsPanel } from '../inventory/work-order-parts';
 import { ReasonDialog, ReasonDialogData } from './reason-dialog';
 import { ScheduleDialog } from './schedule-dialog';
 import { PriorityChip, StatusChip, move, statusLabel } from './work-order-labels';
@@ -27,6 +28,7 @@ import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api
 @Component({
   selector: 'app-work-order-detail',
   imports: [
+    WorkOrderPartsPanel,
     FormsModule, RouterLink, MatButtonModule, MatCardModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
     MatInputModule, MatSlideToggleModule, DubaiTimePipe, MapPicker, WarrantyBadge, StatusChip, PriorityChip,
   ],
@@ -173,6 +175,13 @@ import { Note, WorkOrder, WorkOrderTask, WorkOrdersApi } from './work-orders.api
                   <button mat-stroked-button type="submit" [disabled]="!newTask().trim()">Add</button>
                 </form>
               }
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card appearance="outlined">
+            <mat-card-header><mat-card-title>Parts used</mat-card-title></mat-card-header>
+            <mat-card-content>
+              <app-work-order-parts [workOrderId]="w.id" />
             </mat-card-content>
           </mat-card>
 

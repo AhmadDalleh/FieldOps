@@ -1,3 +1,4 @@
+using FieldOps.Domain.Inventory;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FieldOps.Application.Abstractions;
@@ -62,6 +63,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.AppSettings.Add(AppSettings.CreateDefault());
+        db.StockLocations.Add(StockLocation.CreateMainWarehouse());
         await db.SaveChangesAsync();
     }
 
