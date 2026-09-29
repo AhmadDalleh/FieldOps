@@ -48,6 +48,9 @@ import { NotificationBell } from '../../features/notifications/notification-bell
             <mat-icon matListItemIcon>event_busy</mat-icon><span matListItemTitle>Time off</span>
           </a>
           @if (isAdmin()) {
+            <a mat-list-item routerLink="reports" routerLinkActive="active">
+              <mat-icon matListItemIcon>bar_chart</mat-icon><span matListItemTitle>Reports</span>
+            </a>
             <a mat-list-item routerLink="settings/users" routerLinkActive="active">
               <mat-icon matListItemIcon>group</mat-icon><span matListItemTitle>Users</span>
             </a>

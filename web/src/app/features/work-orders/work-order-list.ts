@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, linkedSignal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -82,13 +82,19 @@ export class WorkOrderList {
   protected readonly types = TYPES;
   protected readonly label = statusLabel;
 
-  protected readonly query = signal<WorkOrderQuery>({
-    page: 1,
-    pageSize: 20,
-    search: '',
-    statuses: [...OPEN_STATUSES],
-    priority: null as WorkOrderPriority | null,
-    type: null as WorkOrderType | null,
+  /** `?status=New` (e.g. from the dashboard) opens the list on that status. */
+  readonly status = input<string>();
+
+  protected readonly query = linkedSignal<WorkOrderQuery>(() => {
+    const status = this.status() as WorkOrderStatus | undefined;
+    return {
+      page: 1,
+      pageSize: 20,
+      search: '',
+      statuses: status && STATUSES.includes(status) ? [status] : [...OPEN_STATUSES],
+      priority: null as WorkOrderPriority | null,
+      type: null as WorkOrderType | null,
+    };
   });
   protected readonly workOrders = rxResource({ params: () => this.query(), stream: ({ params }) => this.api.list(params) });
   constructor() {
